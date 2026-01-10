@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useThemeStore } from "@/store/themeStore";
 
@@ -13,6 +13,7 @@ type CalendarProps = {
     blockSize: number;
     blockMargin: number;
     fontSize: number;
+    renderBlock?: (block: React.ReactNode, activity: any) => React.ReactElement;
 }
 
 // Cast the dynamic import to a component accepting these props
@@ -23,13 +24,18 @@ const theme = {
     dark: ["#1e293b", "#4c1d95", "#6d28d9", "#8b5cf6", "#a78bfa"],
 };
 
-export default function GithubHeatmap() {
+interface GithubHeatmapProps {
+    year?: number | "last";
+}
+
+export default function GithubHeatmap({ year = "last" }: GithubHeatmapProps) {
     const { isDarkMode } = useThemeStore();
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("https://github-contributions-api.jogruber.de/v4/AdevTC?y=last")
+        setLoading(true);
+        fetch(`https://github-contributions-api.jogruber.de/v4/AdevTC?y=${year}`)
             .then((response) => response.json())
             .then((activity) => {
                 if (activity?.contributions) {
@@ -38,7 +44,7 @@ export default function GithubHeatmap() {
             })
             .catch((e) => console.error("Error fetching github activity", e))
             .finally(() => setLoading(false));
-    }, []);
+    }, [year]);
 
     if (loading) {
         return <div className="w-full h-32 flex items-center justify-center text-muted-foreground animate-pulse">Cargando actividad...</div>;
@@ -52,10 +58,15 @@ export default function GithubHeatmap() {
                     colorScheme={isDarkMode ? 'dark' : 'light'}
                     theme={theme}
                     labels={{
-                        totalCount: '{{count}} contribuciones en el último año',
+                        totalCount: `{{count}} contribuciones en ${year === 'last' ? 'el último año' : year}`,
                     }}
                     blockSize={12}
                     blockMargin={4}
+                    renderBlock={(block, activity) => {
+                        return React.cloneElement(block as React.ReactElement, {
+                            title: `${activity.count} contribuciones el ${activity.date}`,
+                        });
+                    }}
                     fontSize={12}
                 />
             </div>

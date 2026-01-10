@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import LikeButton from "@/components/LikeButton";
 import { CommandPalette } from "@/components/CommandPalette";
+import CodeActivityModal from "@/components/CodeActivityModal";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
             {children}
           </main>
           <Guestbook />
+          <CodeActivityModal />
           <LikeButton />
           <Footer />
         </ThemeProvider>

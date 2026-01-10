@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import DownloadCV from "./DownloadCV";
 
 export default function Hero() {
     const [text, setText] = useState("");
@@ -77,6 +78,8 @@ export default function Hero() {
                         >
                             Contactar <MailIcon />
                         </a>
+
+                        <DownloadCV variant="outline" label="Descargar CV" className="px-8 py-4" />
                     </div>
                 </motion.div>
             </div>

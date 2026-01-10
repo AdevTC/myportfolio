@@ -122,12 +122,7 @@ export function CommandPalette() {
                         >
                             <Mail size={16} /> Contacto
                         </Command.Item>
-                        <Command.Item
-                            onSelect={() => runCommand(() => router.push("/hire"))}
-                            className="flex items-center gap-2 px-2 py-2 text-sm text-white rounded-lg aria-selected:bg-primary/20 aria-selected:text-primary cursor-pointer transition-colors"
-                        >
-                            <Calendar size={16} /> Contratar / Agenda
-                        </Command.Item>
+
                     </Command.Group>
 
                     <Command.Separator className="h-px bg-white/10 my-2" />

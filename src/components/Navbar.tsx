@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ColorSwitcher from "./ColorSwitcher";
+import DownloadCV from "./DownloadCV";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -17,7 +18,6 @@ const NAV_LINKS = [
     { name: "Habilidades", href: "/skills" },
     { name: "Testimonios", href: "/testimonials" },
     { name: "Hobbies", href: "/hobbies" },
-    { name: "Contratar", href: "/hire" },
     { name: "Contacto", href: "/contact" },
 ];
 
@@ -74,11 +74,13 @@ export default function Navbar() {
                         </Link>
                     ))}
                     <div className="w-px h-6 bg-white/20 mx-2" />
+                    <DownloadCV variant="ghost" />
                     <ColorSwitcher />
                 </div>
 
                 {/* Mobile Menu Button */}
                 <div className="md:hidden flex items-center gap-4">
+                    <DownloadCV variant="icon" />
                     <ColorSwitcher />
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
