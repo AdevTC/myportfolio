@@ -63,7 +63,7 @@ export default function Hero() {
 
                     <div className="flex flex-wrap gap-6 mt-8">
                         <a
-                            href="#projects"
+                            href="/projects"
                             className="group relative px-8 py-4 bg-primary text-white rounded-full font-bold overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/50"
                         >
                             <div className="absolute inset-0 w-full h-full bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -73,7 +73,7 @@ export default function Hero() {
                         </a>
 
                         <a
-                            href="#contact"
+                            href="mailto:adriantomascv@gmail.com"
                             className="px-8 py-4 border border-white/20 hover:bg-white/5 rounded-full font-bold transition-all hover:border-white/50 flex items-center gap-2"
                         >
                             Contactar <MailIcon />
