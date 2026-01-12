@@ -94,7 +94,7 @@ export default function Guestbook() {
                                 Libro de Visitas
                             </h3>
                             <button
-                                onClick={() => setIsOpen(false)}
+                                onClick={() => closeWidget("guestbook")}
                                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
                             >
                                 <X size={20} />
