@@ -51,8 +51,9 @@ const PROJECTS: ProjectItem[] = [
             }
         ],
         gallery: [
-            "/fantasya_dashboard.png",
-            "/fantasya_market.png"
+            "/fantasya1.jpg", "/fantasya2.jpg", "/fantasya3.jpg", "/fantasya4.jpg", "/fantasya5.jpg",
+            "/fantasya6.jpg", "/fantasya7.jpg", "/fantasya8.jpg", "/fantasya9.jpg", "/fantasya10.jpg",
+            "/fantasya11.jpg", "/fantasya12.jpg", "/fantasya13.jpg", "/fantasya14.jpg", "/fantasya15.jpg"
         ]
     },
     {
@@ -87,8 +88,10 @@ const PROJECTS: ProjectItem[] = [
             }
         ],
         gallery: [
-            "/worldcup_bracket.png",
-            "/worldcup_stats.png"
+            "/wdc1.png",
+            "/wdc2.png",
+            "/wdc3.png",
+            "/wdc4.png"
         ]
     }
 ];

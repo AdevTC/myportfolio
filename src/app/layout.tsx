@@ -9,6 +9,11 @@ import Footer from "@/components/Footer";
 import LikeButton from "@/components/LikeButton";
 import { CommandPalette } from "@/components/CommandPalette";
 import CodeActivityModal from "@/components/CodeActivityModal";
+import { FloatingComponentProvider } from "@/context/FloatingComponentContext";
+import CornerAI from "@/components/widgets/CornerAI";
+import CornerTools from "@/components/widgets/CornerTools";
+import FABMenu from "@/components/widgets/FABMenu";
+import FloatingWindowManager from "@/components/FloatingWindowManager";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -16,7 +21,7 @@ export const metadata: Metadata = {
   title: "Adrián Tomás Cerdá | Software Engineer",
   description: "Portfolio profesional de Adrián Tomás Cerdá. Ingeniero de Software & SAP Integrator.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.png",
   },
 };
 
@@ -29,16 +34,26 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className={outfit.className}>
         <ThemeProvider>
-          <ViewCounter />
-          <CommandPalette />
-          <Navbar />
-          <main className="min-h-screen relative selection:bg-primary/30">
-            {children}
-          </main>
-          <Guestbook />
-          <CodeActivityModal />
-          <LikeButton />
-          <Footer />
+          <FloatingComponentProvider>
+            <ViewCounter />
+            <CommandPalette />
+            <Navbar />
+            <main className="min-h-screen relative selection:bg-primary/30">
+              {children}
+            </main>
+            <Guestbook />
+            <CodeActivityModal />
+            <LikeButton />
+
+            {/* Corner Floating Widgets */}
+            <CornerAI />
+            <CornerTools />
+            <FABMenu />
+
+            <FloatingWindowManager />
+
+            <Footer />
+          </FloatingComponentProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import DownloadCV from "./DownloadCV";
 
 export default function Hero() {
@@ -83,6 +83,16 @@ export default function Hero() {
                     </div>
                 </motion.div>
             </div>
+
+            <motion.div
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground flex flex-col items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, y: [0, 10, 0] }}
+                transition={{ delay: 2, duration: 2, repeat: Infinity }}
+            >
+                <span className="text-xs uppercase tracking-widest text-white/30">Scroll Down</span>
+                <ChevronDown size={24} />
+            </motion.div>
         </section>
     );
 }

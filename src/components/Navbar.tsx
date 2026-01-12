@@ -1,29 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ColorSwitcher from "./ColorSwitcher";
 import DownloadCV from "./DownloadCV";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
+const MAIN_LINKS = [
     { name: "Inicio", href: "/" },
-    { name: "Sobre Mí", href: "/about" },
     { name: "Experiencia", href: "/experience" },
-    { name: "Proyectos", href: "/projects" },
     { name: "Educación", href: "/education" },
+    { name: "Proyectos", href: "/projects" },
+    { name: "Contacto", href: "/contact" },
+];
+
+const MORE_LINKS = [
+    { name: "Sobre Mí", href: "/about" },
     { name: "Habilidades", href: "/skills" },
     { name: "Testimonios", href: "/testimonials" },
     { name: "Hobbies", href: "/hobbies" },
-    { name: "Contacto", href: "/contact" },
 ];
+
+const ALL_LINKS = [...MAIN_LINKS, ...MORE_LINKS];
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isMoreOpen, setIsMoreOpen] = useState(false);
     const pathname = usePathname();
 
     useEffect(() => {
@@ -49,13 +56,19 @@ export default function Navbar() {
         >
             <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="text-xl font-bold tracking-tighter hover:text-primary transition-colors">
-                    &lt;AdrianDev /&gt;
+                <Link href="/" className="hover:opacity-80 transition-opacity">
+                    <Image
+                        src="/logo.png"
+                        alt="Logo"
+                        width={50}
+                        height={50}
+                        className="w-auto h-12 object-contain invert dark:invert-0"
+                    />
                 </Link>
 
                 {/* Desktop Nav */}
                 <div className="hidden md:flex items-center gap-8">
-                    {NAV_LINKS.map((link) => (
+                    {MAIN_LINKS.map((link) => (
                         <Link
                             key={link.name}
                             href={link.href}
@@ -73,6 +86,47 @@ export default function Navbar() {
                             )}
                         </Link>
                     ))}
+
+                    {/* Dropdown "Más" */}
+                    <div
+                        className="relative"
+                        onMouseEnter={() => setIsMoreOpen(true)}
+                        onMouseLeave={() => setIsMoreOpen(false)}
+                    >
+                        <button
+                            className={cn(
+                                "flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary",
+                                MORE_LINKS.some(link => isActive(link.href)) ? "text-primary" : ""
+                            )}
+                        >
+                            Más <ChevronDown size={14} />
+                        </button>
+
+                        <AnimatePresence>
+                            {isMoreOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute top-full right-0 mt-2 w-40 bg-[#0f121b]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl overflow-hidden py-2"
+                                >
+                                    {MORE_LINKS.map(link => (
+                                        <Link
+                                            key={link.name}
+                                            href={link.href}
+                                            className={cn(
+                                                "block px-4 py-2 text-sm hover:bg-white/10 transition-colors",
+                                                isActive(link.href) ? "text-primary bg-white/5" : "text-zinc-300"
+                                            )}
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
                     <div className="w-px h-6 bg-white/20 mx-2" />
                     <DownloadCV variant="ghost" />
                     <ColorSwitcher />
@@ -101,7 +155,7 @@ export default function Navbar() {
                         className="md:hidden glass border-b border-white/10 overflow-hidden"
                     >
                         <div className="flex flex-col p-6 gap-4">
-                            {NAV_LINKS.map((link) => (
+                            {ALL_LINKS.map((link) => (
                                 <Link
                                     key={link.name}
                                     href={link.href}

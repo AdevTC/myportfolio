@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Github, Linkedin, Mail } from "lucide-react";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useGithubStats } from "@/hooks/useGithubStats";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -78,10 +80,18 @@ export default function Footer() {
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
 
                 {/* Brand & Copyright */}
-                <div className="text-center md:text-left">
-                    <h2 className="text-lg font-bold">Adrián Tomás Cerdá</h2>
+                <div className="text-center md:text-left flex flex-col items-center md:items-start">
+                    <Link href="/" className="hover:opacity-80 transition-opacity mb-2">
+                        <Image
+                            src="/logo.png"
+                            alt="Logo"
+                            width={50}
+                            height={50}
+                            className="w-auto h-12 object-contain invert dark:invert-0"
+                        />
+                    </Link>
                     <p className="text-sm text-muted-foreground mt-1">
-                        © {new Date().getFullYear()} - Construido con Next.js & Tailwind.
+                        © {new Date().getFullYear()} Adrián Tomás Cerdá.
                     </p>
                 </div>
 
