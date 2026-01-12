@@ -18,7 +18,7 @@ const NAV_LINKS = [
     { name: "Habilidades", href: "/skills" },
     { name: "Testimonios", href: "/testimonials" },
     { name: "Hobbies", href: "/hobbies" },
-    { name: "Contacto", href: "mailto:adriantomascv@gmail.com" },
+    { name: "Contacto", href: "/contact" },
 ];
 
 export default function Navbar() {
