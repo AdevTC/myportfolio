@@ -111,22 +111,22 @@ export default function Footer() {
                 </div>
 
                 {/* Live Counters */}
-                <div className="flex flex-col sm:flex-row gap-8 bg-white/5 p-5 rounded-2xl border border-white/5 items-center">
+                <div className="flex flex-col sm:flex-row gap-12 bg-white/5 px-10 py-6 rounded-3xl border border-white/5 items-center">
                     {/* Portfolio Stats */}
-                    <div className="flex flex-col items-center gap-2">
-                        <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-1">Portfolio Stats</span>
-                        <div className="flex gap-6 md:gap-8">
+                    <div className="flex flex-col items-center gap-4">
+                        <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest">Portfolio Stats</span>
+                        <div className="flex gap-12">
                             <Counter to={views} label="Visitas" />
                             <Counter to={likes} label="Likes" />
                         </div>
                     </div>
 
-                    <div className="w-full h-px sm:w-px sm:h-12 bg-white/10" />
+                    <div className="w-full h-px sm:w-px sm:h-16 bg-white/10" />
 
                     {/* GitHub Stats */}
-                    <div className="flex flex-col items-center gap-2">
-                        <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-1">GitHub Stats</span>
-                        <div className="flex gap-6 md:gap-8">
+                    <div className="flex flex-col items-center gap-4">
+                        <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest">GitHub Stats</span>
+                        <div className="flex gap-10">
                             <Counter to={user ? user.public_repos : 25} label="Repositorios" />
                             <Counter to={stars} label="Stars" />
                             <Counter to={user ? user.followers : 100} label="Seguidores" />

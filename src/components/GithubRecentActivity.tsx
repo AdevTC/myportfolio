@@ -98,6 +98,38 @@ export default function GithubRecentActivity() {
         if (page > 1) setPage(p => p - 1);
     };
 
+    // Auto-fetch missing commit details for visible items
+    useEffect(() => {
+        githubEvents.forEach(event => {
+            if (event.type === "PushEvent" && (!event.payload?.commits?.length) && event.payload?.head) {
+                const sha = event.payload.head;
+                // Avoid re-fetching if already present
+                if (!commitDetails[sha]) {
+                    fetchCommitDetails(event.repo.url, sha);
+                }
+            }
+        });
+    }, [githubEvents]);
+
+    const fetchCommitDetails = async (repoUrl: string, sha: string) => {
+        try {
+            const res = await fetch(`${repoUrl}/commits/${sha}`);
+            if (res.ok) {
+                const data = await res.json();
+                setCommitDetails(prev => ({
+                    ...prev,
+                    [sha]: {
+                        message: data.commit.message,
+                        stats: data.stats,
+                        files: data.files
+                    }
+                }));
+            }
+        } catch (e) {
+            console.error("Error fetching detail", e);
+        }
+    };
+
     const handleExpand = async (event: GithubEvent) => {
         if (expandedEventId === event.id) {
             setExpandedEventId(null);
@@ -112,22 +144,7 @@ export default function GithubRecentActivity() {
             if (commitSha && (!commitDetails[commitSha] || !commitDetails[commitSha].message)) {
                 setLoadingDetails(commitSha);
                 try {
-                    // We need to fetch the repo URL to get the commits endpoint correctly
-                    // API URL from event.repo.url usually works e.g. https://api.github.com/repos/user/repo
-                    const res = await fetch(`${event.repo.url}/commits/${commitSha}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        setCommitDetails(prev => ({
-                            ...prev,
-                            [commitSha]: {
-                                message: data.commit.message,
-                                stats: data.stats,
-                                files: data.files
-                            }
-                        }));
-                    }
-                } catch (e) {
-                    console.error("Error fetching commit details", e);
+                    await fetchCommitDetails(event.repo.url, commitSha);
                 } finally {
                     setLoadingDetails(null);
                 }
@@ -195,161 +212,185 @@ export default function GithubRecentActivity() {
             </div>
 
             <div className="flex flex-col gap-4">
-                {githubEvents.map((event, i) => (
-                    <motion.div
-                        key={`${event.id}-${i}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.05 }}
-                        className={cn(
-                            "rounded-xl border bg-black/20 overflow-hidden transition-all duration-300",
-                            expandedEventId === event.id
-                                ? "bg-white/5 border-primary/30 shadow-lg ring-1 ring-primary/20"
-                                : "border-white/5 hover:bg-white/5 hover:border-white/10"
-                        )}
-                    >
-                        {/* Event Summary Card */}
-                        <div
-                            onClick={() => handleExpand(event)}
-                            className="p-5 cursor-pointer flex flex-col md:flex-row gap-4 md:items-center justify-between"
-                        >
-                            <div className="flex items-start gap-4">
-                                <div className={cn(
-                                    "mt-1 p-2 rounded-lg flex-shrink-0",
-                                    event.type === "PushEvent" ? "bg-emerald-500/10 text-emerald-400" :
-                                        event.type === "WatchEvent" ? "bg-amber-500/10 text-amber-400" :
-                                            event.type === "PullRequestEvent" ? "bg-blue-500/10 text-blue-400" :
-                                                "bg-zinc-500/10 text-zinc-400"
-                                )}>
-                                    {event.type === "PushEvent" && <GitCommit size={20} />}
-                                    {event.type === "WatchEvent" && <Star size={20} />}
-                                    {event.type === "PullRequestEvent" && <GitPullRequest size={20} />}
-                                    {event.type !== "PushEvent" && event.type !== "WatchEvent" && event.type !== "PullRequestEvent" && <Github size={20} />}
-                                </div>
+                {githubEvents.map((event, i) => {
+                    // Logic to extract message to show
+                    const headSha = event.payload?.head;
+                    const commitMsg = event.payload?.commits?.[0]?.message
+                        || (headSha && commitDetails[headSha]?.message);
+                    const displaySha = event.payload?.commits?.[0]?.sha || headSha;
 
-                                <div>
-                                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                                        <span className={cn(
-                                            "text-xs uppercase font-bold px-2 py-0.5 rounded-full tracking-wider",
-                                            event.type === "PushEvent" ? "bg-emerald-500/10 text-emerald-400" :
-                                                event.type === "WatchEvent" ? "bg-amber-500/10 text-amber-400" :
-                                                    "bg-blue-500/10 text-blue-400"
-                                        )}>
-                                            {event.type.replace("Event", "")}
-                                        </span>
-                                        <span className="text-sm font-semibold text-zinc-200">
-                                            {event.repo.name}
-                                        </span>
-                                        <span className="text-xs text-zinc-500">• {timeAgo(event.created_at)}</span>
+                    return (
+                        <motion.div
+                            key={`${event.id}-${i}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.05 }}
+                            className={cn(
+                                "rounded-xl border bg-black/20 overflow-hidden transition-all duration-300",
+                                expandedEventId === event.id
+                                    ? "bg-white/5 border-primary/30 shadow-lg ring-1 ring-primary/20"
+                                    : "border-white/5 hover:bg-white/5 hover:border-white/10"
+                            )}
+                        >
+                            {/* Event Summary Card */}
+                            <div
+                                onClick={() => handleExpand(event)}
+                                className="p-5 cursor-pointer flex flex-col md:flex-row gap-4 md:items-center justify-between"
+                            >
+                                <div className="flex items-start gap-4">
+                                    <div className={cn(
+                                        "mt-1 p-2 rounded-lg flex-shrink-0",
+                                        event.type === "PushEvent" ? "bg-emerald-500/10 text-emerald-400" :
+                                            event.type === "WatchEvent" ? "bg-amber-500/10 text-amber-400" :
+                                                event.type === "PullRequestEvent" ? "bg-blue-500/10 text-blue-400" :
+                                                    "bg-zinc-500/10 text-zinc-400"
+                                    )}>
+                                        {event.type === "PushEvent" && <GitCommit size={20} />}
+                                        {event.type === "WatchEvent" && <Star size={20} />}
+                                        {event.type === "PullRequestEvent" && <GitPullRequest size={20} />}
+                                        {event.type !== "PushEvent" && event.type !== "WatchEvent" && event.type !== "PullRequestEvent" && <Github size={20} />}
                                     </div>
 
-                                    {event.payload?.commits?.[0] && (
-                                        <p className="text-sm text-zinc-400 line-clamp-1 italic">
-                                            "{event.payload.commits[0].message}"
-                                        </p>
-                                    )}
-                                    {event.type === "PullRequestEvent" && event.payload?.pull_request && (
-                                        <p className="text-sm text-zinc-400 line-clamp-1 italic">
-                                            "{event.payload.pull_request.title}"
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
+                                    <div>
+                                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                                            <span className={cn(
+                                                "text-xs uppercase font-bold px-2 py-0.5 rounded-full tracking-wider",
+                                                event.type === "PushEvent" ? "bg-emerald-500/10 text-emerald-400" :
+                                                    event.type === "WatchEvent" ? "bg-amber-500/10 text-amber-400" :
+                                                        "bg-blue-500/10 text-blue-400"
+                                            )}>
+                                                {event.type.replace("Event", "")}
+                                            </span>
+                                            <span className="text-sm font-semibold text-zinc-200">
+                                                {event.repo.name}
+                                            </span>
+                                            <span className="text-xs text-zinc-500">• {timeAgo(event.created_at)}</span>
+                                        </div>
 
-                            <div className="flex items-center gap-4 text-xs text-zinc-500 pl-14 md:pl-0">
-                                {event.payload?.commits && (
-                                    <span className="flex items-center gap-1">
-                                        {event.payload.commits.length} commits
-                                    </span>
-                                )}
-                                <span className={cn("transition-transform duration-300", expandedEventId === event.id ? "rotate-90" : "rotate-0")}>
-                                    ▶
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Expanded Details */}
-                        <AnimatePresence>
-                            {expandedEventId === event.id && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="overflow-hidden bg-black/40 border-t border-white/5"
-                                >
-                                    <div className="p-5 pl-16">
+                                        {/* Commit Message / Description */}
                                         {event.type === "PushEvent" ? (
-                                            <div>
-                                                <div className="mb-4">
-                                                    <h4 className="text-sm font-bold text-white mb-1">Commit Details</h4>
-                                                    {event.payload?.commits?.[0] ? (
-                                                        <p className="text-zinc-400 text-sm font-mono">{event.payload.commits[0].sha.substring(0, 7)} — {event.payload.commits[0].message}</p>
-                                                    ) : event.payload?.head && commitDetails[event.payload.head]?.message ? (
-                                                        <p className="text-zinc-400 text-sm font-mono">{event.payload.head.substring(0, 7)} — {commitDetails[event.payload.head]!.message}</p>
-                                                    ) : event.payload?.head ? (
-                                                        <p className="text-zinc-400 text-sm font-mono">Commit: {event.payload.head.substring(0, 7)}</p>
-                                                    ) : (
-                                                        <p className="text-zinc-500 text-sm italic">Cargando detalles...</p>
+                                            commitMsg ? (
+                                                <div className="mt-1.5 flex items-start gap-2">
+                                                    {displaySha && (
+                                                        <span className="bg-white/10 text-[10px] px-1.5 py-0.5 rounded text-zinc-400 font-mono mt-0.5">
+                                                            {displaySha.substring(0, 7)}
+                                                        </span>
                                                     )}
+                                                    <p className="text-sm text-zinc-300 font-medium leading-relaxed">
+                                                        {commitMsg}
+                                                    </p>
                                                 </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <Loader2 size={14} className="animate-spin text-zinc-500" />
+                                                    <span className="text-xs text-zinc-500 italic">Cargando detalles del commit...</span>
+                                                </div>
+                                            )
+                                        ) : null}
 
-                                                {(() => {
-                                                    const sha = event.payload?.commits?.[0]?.sha || event.payload?.head;
-                                                    if (!sha) return null;
-
-                                                    if (loadingDetails === sha) {
-                                                        return (
-                                                            <div className="flex items-center gap-2 text-zinc-500 text-sm">
-                                                                <Loader2 className="animate-spin" size={14} /> Cargando archivos...
-                                                            </div>
-                                                        );
-                                                    }
-
-                                                    const details = commitDetails[sha];
-                                                    if (details) {
-                                                        return (
-                                                            <div className="space-y-4">
-                                                                <div className="flex gap-4 text-sm">
-                                                                    <span className="text-emerald-400">+{details.stats.additions} líneas</span>
-                                                                    <span className="text-red-400">-{details.stats.deletions} líneas</span>
-                                                                </div>
-
-                                                                <div className="space-y-1">
-                                                                    {details.files.map((file: any, idx: number) => (
-                                                                        <div key={idx} className="flex items-center justify-between text-xs bg-white/5 p-2 rounded">
-                                                                            <span className="text-zinc-300 font-mono truncate max-w-[300px]">{file.filename}</span>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <span className="text-emerald-500">+{file.additions}</span>
-                                                                                <span className="text-red-500">-{file.deletions}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    }
-
-                                                    // Use stopPropagation to prevent toggling the expand
-                                                    return (
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleExpand(event); }}
-                                                            className="text-xs text-primary underline"
-                                                        >
-                                                            Reintentar carga
-                                                        </button>
-                                                    );
-                                                })()}
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-zinc-500">No hay detalles adicionales disponibles para este evento.</p>
+                                        {event.type === "PullRequestEvent" && event.payload?.pull_request && (
+                                            <p className="text-sm text-zinc-300 mt-1 font-medium">
+                                                {event.payload.pull_request.title}
+                                            </p>
                                         )}
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </motion.div>
-                ))}
+                                </div>
+
+                                <div className="flex items-center gap-4 text-xs text-zinc-500 pl-14 md:pl-0">
+                                    {event.payload?.commits && (
+                                        <span className="flex items-center gap-1">
+                                            {event.payload.commits.length} commits
+                                        </span>
+                                    )}
+                                    <span className={cn("transition-transform duration-300", expandedEventId === event.id ? "rotate-90" : "rotate-0")}>
+                                        ▶
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Expanded Details */}
+                            <AnimatePresence>
+                                {expandedEventId === event.id && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden bg-black/40 border-t border-white/5"
+                                    >
+                                        <div className="p-5 pl-16">
+                                            {event.type === "PushEvent" ? (
+                                                <div>
+                                                    <div className="mb-4">
+                                                        <h4 className="text-sm font-bold text-white mb-1">Commit Details</h4>
+                                                        {event.payload?.commits?.[0] ? (
+                                                            <p className="text-zinc-400 text-sm font-mono">{event.payload.commits[0].sha.substring(0, 7)} — {event.payload.commits[0].message}</p>
+                                                        ) : event.payload?.head && commitDetails[event.payload.head]?.message ? (
+                                                            <p className="text-zinc-400 text-sm font-mono">{event.payload.head.substring(0, 7)} — {commitDetails[event.payload.head]!.message}</p>
+                                                        ) : event.payload?.head ? (
+                                                            <p className="text-zinc-400 text-sm font-mono">Commit: {event.payload.head.substring(0, 7)}</p>
+                                                        ) : (
+                                                            <p className="text-zinc-500 text-sm italic">Cargando detalles...</p>
+                                                        )}
+                                                    </div>
+
+                                                    {(() => {
+                                                        const sha = event.payload?.commits?.[0]?.sha || event.payload?.head;
+                                                        if (!sha) return null;
+
+                                                        if (loadingDetails === sha) {
+                                                            return (
+                                                                <div className="flex items-center gap-2 text-zinc-500 text-sm">
+                                                                    <Loader2 className="animate-spin" size={14} /> Cargando archivos...
+                                                                </div>
+                                                            );
+                                                        }
+
+                                                        const details = commitDetails[sha];
+                                                        if (details) {
+                                                            return (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex gap-4 text-sm">
+                                                                        <span className="text-emerald-400">+{details.stats.additions} líneas</span>
+                                                                        <span className="text-red-400">-{details.stats.deletions} líneas</span>
+                                                                    </div>
+
+                                                                    <div className="space-y-1">
+                                                                        {details.files.map((file: any, idx: number) => (
+                                                                            <div key={idx} className="flex items-center justify-between text-xs bg-white/5 p-2 rounded">
+                                                                                <span className="text-zinc-300 font-mono truncate max-w-[300px]">{file.filename}</span>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-emerald-500">+{file.additions}</span>
+                                                                                    <span className="text-red-500">-{file.deletions}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        }
+
+                                                        // Use stopPropagation to prevent toggling the expand
+                                                        return (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleExpand(event); }}
+                                                                className="text-xs text-primary underline"
+                                                            >
+                                                                Reintentar carga
+                                                            </button>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-zinc-500">No hay detalles adicionales disponibles para este evento.</p>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    );
+                })}
             </div>
 
             {/* Pagination Controls */}
