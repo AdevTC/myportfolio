@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 import GithubHeatmap from "./GithubHeatmap";
+import GithubRecentActivity from "./GithubRecentActivity";
 import { cn } from "@/lib/utils";
 
 const YEARS = [
@@ -68,6 +69,8 @@ export default function CodeActivity() {
                         <GithubHeatmap year={selectedYear} />
                     </div>
                 </motion.div>
+
+                <GithubRecentActivity />
             </div>
         </section>
     );
