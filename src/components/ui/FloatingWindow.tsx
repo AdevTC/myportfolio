@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useRef } from "react";
 
 interface FloatingWindowProps {
-    id: "weather" | "github" | "ai" | "terminal" | "stats" | "status" | "skills" | "game";
+    id: "weather" | "github" | "ai" | "terminal" | "skills" | "game";
     title: string;
     children: React.ReactNode;
     width?: number;

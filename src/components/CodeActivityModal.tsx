@@ -1,96 +1,100 @@
 "use client";
 
-import { useState } from "react";
-import { Activity, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { X, Activity } from "lucide-react";
+import { useFloatingComponents } from "@/context/FloatingComponentContext";
 import GithubHeatmap from "./GithubHeatmap";
 import { cn } from "@/lib/utils";
-import { useFloatingComponents } from "@/context/FloatingComponentContext";
+
+const YEARS = [
+    { label: "Último Año", value: "last" },
+    { label: "2026", value: 2026 },
+    { label: "2025", value: 2025 },
+    { label: "2024", value: 2024 },
+    { label: "2023", value: 2023 },
+    { label: "2022", value: 2022 },
+];
 
 export default function CodeActivityModal() {
     const { isWidgetOpen, closeWidget } = useFloatingComponents();
     const isOpen = isWidgetOpen("codeActivity");
-
     const [selectedYear, setSelectedYear] = useState<number | "last">("last");
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // [2024, 2023, 2022, 2021, 2020]
+
+    // Close on escape key
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === "Escape") closeWidget("codeActivity");
+        };
+        window.addEventListener("keydown", handleEsc);
+        return () => window.removeEventListener("keydown", handleEsc);
+    }, [closeWidget]);
 
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => closeWidget("codeActivity")}
-                        className="fixed inset-0 bg-black/80 z-[60] backdrop-blur-sm flex items-center justify-center p-4"
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                    />
+
+                    {/* Modal Content */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="relative w-full max-w-5xl bg-[#0f121b] border border-white/10 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
                     >
-                        {/* Content */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-[#0f172a] border border-white/10 rounded-2xl p-6 w-full max-w-4xl shadow-2xl relative overflow-hidden"
-                        >
-                            {/* Header */}
-                            <div className="flex justify-between items-center mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-primary/20 text-primary rounded-xl">
-                                        <Activity size={24} />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-2xl font-bold">Actividad de Código</h2>
-                                        <p className="text-sm text-muted-foreground">Historial de contribuciones en GitHub</p>
-                                    </div>
+                        {/* Header */}
+                        <div className="flex md:items-end flex-col md:flex-row justify-between gap-6 p-8 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary/20 rounded-xl text-primary">
+                                    <Activity size={32} />
                                 </div>
-                                <button
-                                    onClick={() => closeWidget("codeActivity")}
-                                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                                >
-                                    <X size={24} />
-                                </button>
+                                <div>
+                                    <h2 className="text-3xl font-bold text-white">Actividad de Código</h2>
+                                    <p className="text-zinc-400">Vista detallada de contribuciones</p>
+                                </div>
                             </div>
 
-                            {/* Filters */}
-                            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                                <button
-                                    onClick={() => setSelectedYear("last")}
-                                    className={cn(
-                                        "px-4 py-2 rounded-lg text-sm font-medium transition-colors border whitespace-nowrap",
-                                        selectedYear === "last"
-                                            ? "bg-primary text-white border-primary"
-                                            : "bg-white/5 border-white/10 hover:bg-white/10"
-                                    )}
-                                >
-                                    Último Año
-                                </button>
-                                {years.map(year => (
+                            <div className="flex flex-wrap gap-2 pr-12">
+                                {YEARS.map((year) => (
                                     <button
-                                        key={year}
-                                        onClick={() => setSelectedYear(year)}
+                                        key={year.label}
+                                        onClick={() => setSelectedYear(year.value as number | "last")}
                                         className={cn(
-                                            "px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
-                                            selectedYear === year
-                                                ? "bg-primary text-white border-primary"
-                                                : "bg-white/5 border-white/10 hover:bg-white/10"
+                                            "px-4 py-2 rounded-lg text-sm font-bold transition-all border",
+                                            selectedYear === year.value
+                                                ? "bg-primary text-primary-foreground border-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+                                                : "bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white"
                                         )}
                                     >
-                                        {year}
+                                        {year.label}
                                     </button>
                                 ))}
                             </div>
 
-                            {/* Heatmap */}
-                            <div className="bg-black/20 rounded-xl p-2 min-h-[200px] flex items-center justify-center">
+                            <button
+                                onClick={() => closeWidget("codeActivity")}
+                                className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/20 text-zinc-400 hover:text-white transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 flex flex-col items-center justify-center bg-black/20">
+                            <div className="w-full">
                                 <GithubHeatmap year={selectedYear} />
                             </div>
-
-                        </motion.div>
+                        </div>
                     </motion.div>
-                </>
+                </div>
             )}
         </AnimatePresence>
     );

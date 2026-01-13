@@ -8,6 +8,7 @@ export default function BookingSection() {
         (async function () {
             const cal = await getCalApi({});
             cal("ui", {
+                theme: "dark",
                 styles: { branding: { brandColor: "#8b5cf6" } },
                 hideEventTypeDetails: false,
                 layout: "month_view"
@@ -26,11 +27,11 @@ export default function BookingSection() {
                         Busca un hueco en mi calendario
                     </p>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 bg-black/20">
                     <Cal
                         calLink="adrian-tomas-cerda-3nxv6f"
-                        style={{ width: "100%", height: "100%", overflow: "scroll" }}
-                        config={{ layout: 'month_view' }}
+                        style={{ width: "100%", height: "100%", overflow: "auto" }}
+                        config={{ layout: 'month_view', theme: 'dark' }}
                     />
                 </div>
             </div>

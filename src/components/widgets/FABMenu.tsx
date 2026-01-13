@@ -10,7 +10,6 @@ export default function FABMenu() {
     const { toggleWidget } = useFloatingComponents();
 
     const menuItems: { id: WidgetId; label: string; icon: any; color: string }[] = [
-        { id: "guestbook", label: "Libro de Visitas", icon: MessageCircle, color: "bg-blue-500" },
         { id: "codeActivity", label: "Actividad Código", icon: Activity, color: "bg-purple-500" },
         { id: "terminal", label: "Terminal", icon: TerminalSquare, color: "bg-green-500" },
         { id: "game", label: "Minijuego", icon: Gamepad2, color: "bg-amber-500" },

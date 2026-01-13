@@ -3,17 +3,18 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import ViewCounter from "@/components/ViewCounter";
-import Guestbook from "@/components/Guestbook";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import LikeButton from "@/components/LikeButton";
 import { CommandPalette } from "@/components/CommandPalette";
-import CodeActivityModal from "@/components/CodeActivityModal";
+
 import { FloatingComponentProvider } from "@/context/FloatingComponentContext";
 import CornerAI from "@/components/widgets/CornerAI";
 import CornerTools from "@/components/widgets/CornerTools";
 import FABMenu from "@/components/widgets/FABMenu";
 import FloatingWindowManager from "@/components/FloatingWindowManager";
+import CodeActivityModal from "@/components/CodeActivityModal";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -41,8 +42,7 @@ export default function RootLayout({
             <main className="min-h-screen relative selection:bg-primary/30">
               {children}
             </main>
-            <Guestbook />
-            <CodeActivityModal />
+
             <LikeButton />
 
             {/* Corner Floating Widgets */}
@@ -51,6 +51,7 @@ export default function RootLayout({
             <FABMenu />
 
             <FloatingWindowManager />
+            <CodeActivityModal />
 
             <Footer />
           </FloatingComponentProvider>

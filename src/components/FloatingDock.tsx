@@ -19,8 +19,6 @@ const DOCK_ITEMS = [
     { id: "github", icon: Github, label: "GitHub" },
     { id: "ai", icon: Bot, label: "IA Assistant" },
     { id: "terminal", icon: TerminalSquare, label: "Terminal" },
-    { id: "stats", icon: BarChart3, label: "Estadísticas" },
-    { id: "status", icon: Clock, label: "Estado" },
     { id: "skills", icon: Atom, label: "Skills" },
     { id: "game", icon: Gamepad2, label: "Jugar" },
 ] as const;

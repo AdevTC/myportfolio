@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { useThemeStore } from "@/store/themeStore";
+import { useThemeStore, PrimaryColor } from "@/store/themeStore";
 
 // Define prop types explicitly to help TS
 type CalendarProps = {
@@ -19,9 +19,49 @@ type CalendarProps = {
 // Cast the dynamic import to a component accepting these props
 const GitHubCalendar = dynamic<CalendarProps>(() => import("react-activity-calendar").then((mod: any) => mod.ActivityCalendar) as any, { ssr: false });
 
-const theme = {
-    light: ["#f1f5f9", "#c4b5fd", "#a78bfa", "#8b5cf6", "#7c3aed"],
-    dark: ["#1e293b", "#4c1d95", "#6d28d9", "#8b5cf6", "#a78bfa"],
+// Define palettes for each primary color
+// Format: [Level0 (empty), Level1, Level2, Level3, Level4]
+const HEATMAP_THEMES: Record<PrimaryColor, { light: string[]; dark: string[] }> = {
+    purple: {
+        light: ["#f1f5f9", "#e9d5ff", "#c084fc", "#a855f7", "#7e22ce"],
+        dark: ["#1e293b", "#581c87", "#7e22ce", "#a855f7", "#d8b4fe"],
+    },
+    blue: {
+        light: ["#f1f5f9", "#cffafe", "#67e8f9", "#22d3ee", "#0891b2"],
+        dark: ["#1e293b", "#164e63", "#0891b2", "#22d3ee", "#67e8f9"],
+    },
+    emerald: {
+        light: ["#f1f5f9", "#d1fae5", "#6ee7b7", "#34d399", "#059669"],
+        dark: ["#1e293b", "#064e3b", "#059669", "#34d399", "#6ee7b7"],
+    },
+    gold: {
+        light: ["#f1f5f9", "#fef3c7", "#fcd34d", "#fbbf24", "#d97706"],
+        dark: ["#1e293b", "#78350f", "#d97706", "#fbbf24", "#fcd34d"],
+    },
+    pink: {
+        light: ["#f1f5f9", "#fce7f3", "#f9a8d4", "#f472b6", "#db2777"],
+        dark: ["#1e293b", "#831843", "#db2777", "#f472b6", "#f9a8d4"],
+    },
+    red: {
+        light: ["#f1f5f9", "#fee2e2", "#fca5a5", "#f87171", "#dc2626"],
+        dark: ["#1e293b", "#7f1d1d", "#dc2626", "#f87171", "#fca5a5"],
+    },
+    orange: {
+        light: ["#f1f5f9", "#ffedd5", "#fdba74", "#fb923c", "#ea580c"],
+        dark: ["#1e293b", "#7c2d12", "#ea580c", "#fb923c", "#fdba74"],
+    },
+    teal: {
+        light: ["#f1f5f9", "#ccfbf1", "#5eead4", "#2dd4bf", "#0d9488"],
+        dark: ["#1e293b", "#134e4a", "#0d9488", "#2dd4bf", "#5eead4"],
+    },
+    indigo: {
+        light: ["#f1f5f9", "#e0e7ff", "#818cf8", "#6366f1", "#4338ca"],
+        dark: ["#1e293b", "#312e81", "#4338ca", "#6366f1", "#818cf8"],
+    },
+    rose: {
+        light: ["#f1f5f9", "#ffe4e6", "#fda4af", "#fb7185", "#e11d48"],
+        dark: ["#1e293b", "#881337", "#e11d48", "#fb7185", "#fda4af"],
+    },
 };
 
 interface GithubHeatmapProps {
@@ -29,7 +69,7 @@ interface GithubHeatmapProps {
 }
 
 export default function GithubHeatmap({ year = "last" }: GithubHeatmapProps) {
-    const { isDarkMode } = useThemeStore();
+    const { isDarkMode, primaryColor } = useThemeStore();
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -56,7 +96,7 @@ export default function GithubHeatmap({ year = "last" }: GithubHeatmapProps) {
                 <GitHubCalendar
                     data={data}
                     colorScheme={isDarkMode ? 'dark' : 'light'}
-                    theme={theme}
+                    theme={HEATMAP_THEMES[primaryColor]}
                     labels={{
                         totalCount: `{{count}} contribuciones en ${year === 'last' ? 'el último año' : year}`,
                     }}

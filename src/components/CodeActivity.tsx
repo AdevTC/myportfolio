@@ -1,70 +1,74 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
-import { cn } from "@/lib/utils";
 import GithubHeatmap from "./GithubHeatmap";
-import Section from "./ui/Section";
+import { cn } from "@/lib/utils";
+
+const YEARS = [
+    { label: "Último Año", value: "last" },
+    { label: "2026", value: 2026 },
+    { label: "2025", value: 2025 },
+    { label: "2024", value: 2024 },
+    { label: "2023", value: 2023 },
+    { label: "2022", value: 2022 },
+];
 
 export default function CodeActivity() {
     const [selectedYear, setSelectedYear] = useState<number | "last">("last");
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
     return (
-        <Section className="py-20">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 bg-primary/20 text-primary rounded-xl">
+        <section className="py-20 relative overflow-hidden">
+            <div className="container mx-auto px-6">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        className="flex items-center gap-4"
+                    >
+                        <div className="p-3 bg-primary/10 rounded-xl text-primary">
                             <Activity size={32} />
                         </div>
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-bold">Actividad de Código</h2>
-                            <p className="text-muted-foreground">Historial de contribuciones en GitHub</p>
+                            <h2 className="text-4xl font-bold text-white tracking-tight">Actividad de Código</h2>
+                            <p className="text-zinc-400">Historial de contribuciones en GitHub</p>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    {/* Filters */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto">
-                        <button
-                            onClick={() => setSelectedYear("last")}
-                            className={cn(
-                                "px-4 py-2 rounded-lg text-sm font-medium transition-colors border whitespace-nowrap",
-                                selectedYear === "last"
-                                    ? "bg-primary text-white border-primary"
-                                    : "bg-white/5 border-white/10 hover:bg-white/10"
-                            )}
-                        >
-                            Último Año
-                        </button>
-                        {years.map(year => (
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        className="flex flex-wrap gap-2"
+                    >
+                        {YEARS.map((year) => (
                             <button
-                                key={year}
-                                onClick={() => setSelectedYear(year)}
+                                key={year.label}
+                                onClick={() => setSelectedYear(year.value as number | "last")}
                                 className={cn(
-                                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
-                                    selectedYear === year
-                                        ? "bg-primary text-white border-primary"
-                                        : "bg-white/5 border-white/10 hover:bg-white/10"
+                                    "px-4 py-2 rounded-lg text-sm font-bold transition-all border",
+                                    selectedYear === year.value
+                                        ? "bg-primary text-primary-foreground border-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+                                        : "bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white"
                                 )}
                             >
-                                {year}
+                                {year.label}
                             </button>
                         ))}
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* Heatmap Container */}
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-10 shadow-xl overflow-hidden relative group">
-                    {/* Glow Effect */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -z-10 group-hover:bg-primary/10 transition-colors" />
-
-                    <div className="min-h-[200px] flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    className="group relative"
+                >
+                    <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-blue-500/20 to-purple-500/20 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-500" />
+                    <div className="relative">
                         <GithubHeatmap year={selectedYear} />
                     </div>
-                </div>
+                </motion.div>
             </div>
-        </Section>
+        </section>
     );
 }
