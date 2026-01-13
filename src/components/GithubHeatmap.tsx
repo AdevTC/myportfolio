@@ -62,6 +62,14 @@ const HEATMAP_THEMES: Record<PrimaryColor, { light: string[]; dark: string[] }> 
         light: ["#f1f5f9", "#ffe4e6", "#fda4af", "#fb7185", "#e11d48"],
         dark: ["#1e293b", "#881337", "#e11d48", "#fb7185", "#fda4af"],
     },
+    premium_gold: {
+        light: ["#f1f5f9", "#e8e0d5", "#c6b39a", "#a88e6e", "#927043"],
+        dark: ["#1e293b", "#4a3822", "#6e5433", "#927043", "#b08d5e"],
+    },
+    silver: {
+        light: ["#f1f5f9", "#e2e4e5", "#c0c4c5", "#9da4a6", "#797f81"],
+        dark: ["#1e293b", "#3d4041", "#5a6061", "#797f81", "#9ba1a2"],
+    },
 };
 
 interface GithubHeatmapProps {

@@ -57,11 +57,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
+  background: var(--primary);
   border-radius: 5px;
-  opacity: 0.5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: color-mix(in srgb, var(--primary), white 20%);
+  box-shadow: 0 0 10px var(--primary);
 }

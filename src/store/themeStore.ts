@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type PrimaryColor = 'purple' | 'blue' | 'emerald' | 'gold' | 'pink' | 'red' | 'orange' | 'teal' | 'indigo' | 'rose';
+export type PrimaryColor = 'purple' | 'blue' | 'emerald' | 'gold' | 'pink' | 'red' | 'orange' | 'teal' | 'indigo' | 'rose' | 'premium_gold' | 'silver';
 
 interface ThemeState {
     isDarkMode: boolean;
@@ -35,4 +35,6 @@ export const THEME_COLORS: Record<PrimaryColor, string> = {
     teal: '#14b8a6',
     indigo: '#6366f1',
     rose: '#f43f5e',
+    premium_gold: '#927043',
+    silver: '#797f81',
 };
