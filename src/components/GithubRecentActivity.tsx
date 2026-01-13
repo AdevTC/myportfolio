@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GitCommit, Star, GitPullRequest, Github, AlertCircle, Loader2 } from "lucide-react";
+import { GitCommit, Star, GitPullRequest, Github, AlertCircle, Loader2, ChevronLeft, ChevronRight, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // GitHub Types
@@ -36,20 +36,22 @@ interface CommitDetails {
 export default function GithubRecentActivity() {
     const [githubEvents, setGithubEvents] = useState<GithubEvent[]>([]);
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [loading, setLoading] = useState(false);
-    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
     const [commitDetails, setCommitDetails] = useState<Record<string, CommitDetails | null>>({});
     const [loadingDetails, setLoadingDetails] = useState<string | null>(null);
+    // GitHub typically returns max 300 events or 90 days. We don't know total pages, 
+    // but if we get fewer items than requested, we hit the end.
+    const [hasMore, setHasMore] = useState(true);
 
-    const fetchGithub = async (pageNum: number, isLoadMore = false) => {
+    const fetchGithub = async (pageNum: number, size: number) => {
         const username = process.env.NEXT_PUBLIC_GITHUB_USERNAME || "AdevTC";
-        if (!isLoadMore) setLoading(true);
-        else setLoadingMore(true);
+        setLoading(true);
 
         try {
-            const res = await fetch(`https://api.github.com/users/${username}/events?per_page=12&page=${pageNum}`);
+            const res = await fetch(`https://api.github.com/users/${username}/events?per_page=${size}&page=${pageNum}`);
 
             if (!res.ok) {
                 if (res.status === 403) throw new Error("Rate limit exceeded");
@@ -58,28 +60,42 @@ export default function GithubRecentActivity() {
 
             const data = await res.json();
 
-            setGithubEvents(prev => isLoadMore ? [...prev, ...data] : data);
+            // If we got fewer items than page size, we've likely hit the end or rate limit boundaries (empty)
+            if (data.length < size) setHasMore(false);
+            else setHasMore(true);
+
+            setGithubEvents(data);
             setError(null);
         } catch (e: any) {
             console.error("GitHub Fetch Error:", e);
-            if (!isLoadMore) {
-                setGithubEvents([]);
-                setError(e.message === "Rate limit exceeded" ? "Límite de API excedido" : "Error al cargar actividad");
-            }
+            setGithubEvents([]);
+            setError(e.message === "Rate limit exceeded" ? "Límite de API excedido" : "Error al cargar actividad");
         } finally {
             setLoading(false);
-            setLoadingMore(false);
         }
     };
 
     useEffect(() => {
-        fetchGithub(1);
-    }, []);
+        setPage(1); // Reset to page 1 on mount or significant change? No, just initial.
+        fetchGithub(1, pageSize);
+    }, []); // Only mount
 
-    const handleLoadMore = () => {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        fetchGithub(nextPage, true);
+    // Re-fetch when page or pageSize changes
+    useEffect(() => {
+        fetchGithub(page, pageSize);
+    }, [page, pageSize]);
+
+    const handlePageSizeChange = (newSize: number) => {
+        setPageSize(newSize);
+        setPage(1); // Reset to first page when changing density
+    };
+
+    const handleNextPage = () => {
+        if (hasMore) setPage(p => p + 1);
+    };
+
+    const handlePrevPage = () => {
+        if (page > 1) setPage(p => p - 1);
     };
 
     const handleExpand = async (event: GithubEvent) => {
@@ -93,7 +109,7 @@ export default function GithubRecentActivity() {
         // Fetch details if not already cached and it's a push event
         if (event.type === "PushEvent") {
             const commitSha = event.payload?.commits?.[0]?.sha || event.payload?.head;
-            if (commitSha && !commitDetails[commitSha]) {
+            if (commitSha && (!commitDetails[commitSha] || !commitDetails[commitSha].message)) {
                 setLoadingDetails(commitSha);
                 try {
                     // We need to fetch the repo URL to get the commits endpoint correctly
@@ -146,16 +162,37 @@ export default function GithubRecentActivity() {
 
     return (
         <div className="mt-12">
-            <motion.h3
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                className="text-2xl font-bold text-white mb-8 flex items-center gap-3"
-            >
-                <div className="p-2 bg-primary/20 rounded-lg text-primary">
-                    <Github size={24} />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <motion.h3
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="text-2xl font-bold text-white flex items-center gap-3"
+                >
+                    <div className="p-2 bg-primary/20 rounded-lg text-primary">
+                        <Github size={24} />
+                    </div>
+                    <span>Historial de Actividad</span>
+                </motion.h3>
+
+                {/* Controls */}
+                <div className="flex items-center gap-4 text-sm bg-white/5 p-2 rounded-lg border border-white/5 self-start md:self-auto">
+                    <span className="text-zinc-500 hidden sm:inline">Mostrar:</span>
+                    <div className="flex items-center gap-1">
+                        {[5, 10, 20, 50, 100].map(s => (
+                            <button
+                                key={s}
+                                onClick={() => handlePageSizeChange(s)}
+                                className={cn(
+                                    "px-3 py-1 rounded-md transition-all",
+                                    pageSize === s ? "bg-primary/20 text-primary font-bold" : "text-zinc-400 hover:bg-white/10"
+                                )}
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                Historial de Actividad
-            </motion.h3>
+            </div>
 
             <div className="flex flex-col gap-4">
                 {githubEvents.map((event, i) => (
@@ -166,8 +203,10 @@ export default function GithubRecentActivity() {
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.05 }}
                         className={cn(
-                            "rounded-xl border border-white/5 bg-black/20 overflow-hidden transition-all duration-300",
-                            expandedEventId === event.id ? "bg-white/5 border-primary/30 shadow-lg ring-1 ring-primary/20" : "hover:bg-white/5 hover:border-white/10"
+                            "rounded-xl border bg-black/20 overflow-hidden transition-all duration-300",
+                            expandedEventId === event.id
+                                ? "bg-white/5 border-primary/30 shadow-lg ring-1 ring-primary/20"
+                                : "border-white/5 hover:bg-white/5 hover:border-white/10"
                         )}
                     >
                         {/* Event Summary Card */}
@@ -313,18 +352,28 @@ export default function GithubRecentActivity() {
                 ))}
             </div>
 
-            {githubEvents.length > 0 && (
-                <div className="mt-8 flex justify-center">
+            {/* Pagination Controls */}
+            <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-6">
+                <div className="text-zinc-500 text-sm pl-2">
+                    Página <span className="text-white font-mono font-bold mx-1">{page}</span>
+                </div>
+                <div className="flex items-center gap-2">
                     <button
-                        onClick={handleLoadMore}
-                        disabled={loadingMore}
-                        className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all flex items-center gap-2 disabled:opacity-50"
+                        onClick={handlePrevPage}
+                        disabled={page === 1 || loading}
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 disabled:opacity-30 disabled:hover:bg-white/5 transition-all"
                     >
-                        {loadingMore ? <Loader2 className="animate-spin" size={16} /> : null}
-                        {loadingMore ? "Cargando..." : "Cargar más historial"}
+                        <ChevronLeft size={20} />
+                    </button>
+                    <button
+                        onClick={handleNextPage}
+                        disabled={!hasMore || loading}
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 disabled:opacity-30 disabled:hover:bg-white/5 transition-all"
+                    >
+                        <ChevronRight size={20} />
                     </button>
                 </div>
-            )}
+            </div>
         </div>
     );
 }
