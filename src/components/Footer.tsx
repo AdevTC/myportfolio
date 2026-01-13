@@ -51,13 +51,17 @@ function Counter({ to, label }: { to: number; label: string }) {
 export default function Footer() {
     const { user } = useGithubStats();
     const [views, setViews] = useState(0);
+    const [likes, setLikes] = useState(0);
     const [contributions, setContributions] = useState(0);
+    const [stars, setStars] = useState(0);
 
     useEffect(() => {
-        // Listen for view count
+        // Listen for view count & likes
         const unsub = onSnapshot(doc(db, "portfolio", "stats"), (doc) => {
             if (doc.exists()) {
-                setViews(doc.data().views || 0);
+                const data = doc.data();
+                setViews(data.views || 0);
+                setLikes(data.likes || 0);
             }
         });
 
@@ -72,6 +76,17 @@ export default function Footer() {
             })
             .catch(err => console.error(err));
 
+        // Fetch stars
+        fetch("https://api.github.com/users/AdevTC/repos?per_page=100")
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    const totalStars = data.reduce((acc: number, repo: any) => acc + (repo.stargazers_count || 0), 0);
+                    setStars(totalStars);
+                }
+            })
+            .catch(err => console.error("Error fetching stars:", err));
+
         return () => unsub();
     }, []);
 
@@ -85,22 +100,39 @@ export default function Footer() {
                         <Image
                             src="/logo.png"
                             alt="Logo"
-                            width={50}
-                            height={50}
-                            className="w-auto h-12 object-contain invert dark:invert-0"
+                            width={70}
+                            height={70}
+                            className="w-auto h-20 object-contain invert dark:invert-0"
                         />
                     </Link>
                     <p className="text-sm text-muted-foreground mt-1">
-                        © {new Date().getFullYear()} Adrián Tomás Cerdá.
+                        © {new Date().getFullYear()} Adrián Tomás Cerdá. Todos los derechos reservados.
                     </p>
                 </div>
 
                 {/* Live Counters */}
-                <div className="flex flex-wrap justify-center gap-8 bg-white/5 p-4 rounded-2xl border border-white/5">
-                    <Counter to={views} label="Visitas" />
-                    <Counter to={user ? user.public_repos : 25} label="Repos" />
-                    <Counter to={user ? user.followers : 100} label="Seguidores" />
-                    <Counter to={contributions} label="Contribuciones" />
+                <div className="flex flex-col sm:flex-row gap-8 bg-white/5 p-5 rounded-2xl border border-white/5 items-center">
+                    {/* Portfolio Stats */}
+                    <div className="flex flex-col items-center gap-2">
+                        <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-1">Portfolio Stats</span>
+                        <div className="flex gap-6 md:gap-8">
+                            <Counter to={views} label="Visitas" />
+                            <Counter to={likes} label="Likes" />
+                        </div>
+                    </div>
+
+                    <div className="w-full h-px sm:w-px sm:h-12 bg-white/10" />
+
+                    {/* GitHub Stats */}
+                    <div className="flex flex-col items-center gap-2">
+                        <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-1">GitHub Stats</span>
+                        <div className="flex gap-6 md:gap-8">
+                            <Counter to={user ? user.public_repos : 25} label="Repositorios" />
+                            <Counter to={stars} label="Stars" />
+                            <Counter to={user ? user.followers : 100} label="Seguidores" />
+                            <Counter to={contributions} label="Commits" />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Social Links */}

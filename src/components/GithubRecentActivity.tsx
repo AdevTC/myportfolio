@@ -36,7 +36,7 @@ interface CommitDetails {
 export default function GithubRecentActivity() {
     const [githubEvents, setGithubEvents] = useState<GithubEvent[]>([]);
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(5);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
