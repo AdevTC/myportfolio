@@ -27,7 +27,7 @@ import { useThemeStore, THEME_COLORS, PrimaryColor } from "@/store/themeStore";
 export function CommandPalette() {
     const [open, setOpen] = React.useState(false);
     const router = useRouter();
-    const { toggleDarkMode, setPrimaryColor } = useThemeStore();
+    const { setPrimaryColor } = useThemeStore();
 
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -128,12 +128,7 @@ export function CommandPalette() {
                     <Command.Separator className="h-px bg-white/10 my-2" />
 
                     <Command.Group heading="Tema" className="text-xs font-bold text-muted-foreground px-2 py-1 mb-1">
-                        <Command.Item
-                            onSelect={() => runCommand(toggleDarkMode)}
-                            className="flex items-center gap-2 px-2 py-2 text-sm text-white rounded-lg aria-selected:bg-primary/20 aria-selected:text-primary cursor-pointer transition-colors"
-                        >
-                            <Moon size={16} /> Alternar Modo Oscuro
-                        </Command.Item>
+
 
                         {Object.keys(THEME_COLORS).map((color) => (
                             <Command.Item

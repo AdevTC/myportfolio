@@ -77,7 +77,7 @@ interface GithubHeatmapProps {
 }
 
 export default function GithubHeatmap({ year = "last" }: GithubHeatmapProps) {
-    const { isDarkMode, primaryColor } = useThemeStore();
+    const { primaryColor } = useThemeStore();
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -103,7 +103,7 @@ export default function GithubHeatmap({ year = "last" }: GithubHeatmapProps) {
             <div className="min-w-[600px]">
                 <GitHubCalendar
                     data={data}
-                    colorScheme={isDarkMode ? 'dark' : 'light'}
+                    colorScheme='dark'
                     theme={HEATMAP_THEMES[primaryColor]}
                     labels={{
                         totalCount: `{{count}} contribuciones en ${year === 'last' ? 'el último año' : year}`,

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface ShareButtonProps {
     className?: string;
-    variant?: "icon" | "full";
+    variant?: "icon" | "full" | "ghost" | "custom";
 }
 
 export default function ShareButton({ className, variant = "icon", children }: ShareButtonProps & { children?: React.ReactNode }) {
