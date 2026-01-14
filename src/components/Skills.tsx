@@ -7,7 +7,7 @@ import { LayoutGrid, Scroll, X, CheckCircle, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // --- Data Definition ---
-interface Skill {
+export interface Skill {
     name: string;
     logo: string;
     description: string;
@@ -15,13 +15,13 @@ interface Skill {
     link: string;
 }
 
-interface SkillCategory {
+export interface SkillCategory {
     id: string;
     label: string;
     skills: Skill[];
 }
 
-const SKILLS_DATA: SkillCategory[] = [
+export const SKILLS_DATA: SkillCategory[] = [
     {
         id: "backend",
         label: "Backend & Core",

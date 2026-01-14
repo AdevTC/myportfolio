@@ -18,7 +18,7 @@ interface ProjectItem {
     gallery: string[]; // New field for images
 }
 
-const PROJECTS: ProjectItem[] = [
+export const PROJECTS: ProjectItem[] = [
     {
         id: "fantasya",
         title: "Fantasya",

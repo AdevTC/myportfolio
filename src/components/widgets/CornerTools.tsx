@@ -10,29 +10,30 @@ import { cn } from "@/lib/utils";
 
 
 // GitHub Types
+// Expanded GitHub Types for robustness
 interface GithubEvent {
     id: string;
     type: string;
-    repo: { name: string };
+    repo: { name: string; url: string };
     created_at: string;
-    payload?: { commits?: { message: string }[] };
+    payload?: {
+        head?: string;
+        commits?: { sha: string; message: string }[]
+    };
 }
 
-
+interface CommitDetails {
+    message: string;
+}
 
 export default function CornerTools() {
     const [isOpen, setIsOpen] = useState(false);
-
     const [githubEvents, setGithubEvents] = useState<GithubEvent[]>([]);
+    const [commitDetails, setCommitDetails] = useState<Record<string, CommitDetails>>({});
     const [error, setError] = useState<string | null>(null);
 
-
-
-    // Initial Fetch (Mock or Real)
+    // Initial Fetch
     useEffect(() => {
-
-
-        // --- fetch GitHub ---
         const fetchGithub = async () => {
             const username = process.env.NEXT_PUBLIC_GITHUB_USERNAME || "AdevTC";
             try {
@@ -52,9 +53,35 @@ export default function CornerTools() {
         };
 
         fetchGithub();
-
-
     }, []);
+
+    // Auto-fetch missing commit details
+    useEffect(() => {
+        githubEvents.forEach(event => {
+            if (event.type === "PushEvent" && (!event.payload?.commits?.length) && event.payload?.head) {
+                const sha = event.payload.head;
+                if (!commitDetails[sha]) {
+                    fetchCommitDetails(event.repo.url, sha);
+                }
+            }
+        });
+    }, [githubEvents]);
+
+    const fetchCommitDetails = async (repoUrl: string, sha: string) => {
+        try {
+            // Ensure we use the API URL correctly
+            const res = await fetch(`${repoUrl}/commits/${sha}`);
+            if (res.ok) {
+                const data = await res.json();
+                setCommitDetails(prev => ({
+                    ...prev,
+                    [sha]: { message: data.commit.message }
+                }));
+            }
+        } catch (e) {
+            console.error("Error fetching detail", e);
+        }
+    };
 
     // Helper to format time
     const timeAgo = (dateStr: string) => {
@@ -90,9 +117,6 @@ export default function CornerTools() {
 
                         {/* Content Body */}
                         <div className="p-4 h-[300px]">
-
-
-
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -114,25 +138,38 @@ export default function CornerTools() {
                                             )}
                                         </div>
                                     ) : (
-                                        githubEvents.map(event => (
-                                            <div key={event.id} className="relative pl-4 border-l border-white/10 py-1">
-                                                <span className="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-[#151b29] border border-white/20" />
-                                                <div className="flex justify-between items-start">
-                                                    <span className="text-[10px] uppercase font-bold text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded">
-                                                        {event.type.replace("Event", "")}
-                                                    </span>
-                                                    <span className="text-[10px] text-zinc-600">{timeAgo(event.created_at)}</span>
-                                                </div>
-                                                <p className="text-xs text-zinc-300 font-medium mt-1 truncate">
-                                                    {event.repo.name}
-                                                </p>
-                                                {event.payload?.commits?.[0] && (
-                                                    <p className="text-[10px] text-zinc-500 mt-1 line-clamp-2">
-                                                        "{event.payload.commits[0].message}"
+                                        githubEvents.map(event => {
+                                            const headSha = event.payload?.head;
+                                            const commitMsg = event.payload?.commits?.[0]?.message
+                                                || (headSha && commitDetails[headSha]?.message);
+
+                                            return (
+                                                <div key={event.id} className="relative pl-4 border-l border-white/10 py-1">
+                                                    <span className="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-[#151b29] border border-white/20" />
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="text-[10px] uppercase font-bold text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded">
+                                                            {event.type.replace("Event", "")}
+                                                        </span>
+                                                        <span className="text-[10px] text-zinc-600">{timeAgo(event.created_at)}</span>
+                                                    </div>
+                                                    <p className="text-xs text-zinc-300 font-medium mt-1 truncate">
+                                                        {event.repo.name}
                                                     </p>
-                                                )}
-                                            </div>
-                                        ))
+                                                    {event.type === "PushEvent" ? (
+                                                        commitMsg ? (
+                                                            <p className="text-[10px] text-zinc-400 mt-1 leading-relaxed line-clamp-2">
+                                                                "{commitMsg}"
+                                                            </p>
+                                                        ) : (
+                                                            <div className="flex items-center gap-1 mt-1">
+                                                                <Loader2 size={10} className="animate-spin text-zinc-600" />
+                                                                <span className="text-[10px] text-zinc-600 italic">Cargando...</span>
+                                                            </div>
+                                                        )
+                                                    ) : null}
+                                                </div>
+                                            );
+                                        })
                                     )}
                                 </div>
 
@@ -147,9 +184,6 @@ export default function CornerTools() {
                                     </a>
                                 </div>
                             </motion.div>
-
-
-
                         </div>
                     </motion.div>
                 )}
@@ -167,8 +201,6 @@ export default function CornerTools() {
                     <Github size={18} className="text-white" />
                     <span className="text-xs font-bold text-white">GitHub</span>
                 </div>
-
-
             </motion.div>
         </div>
     );
