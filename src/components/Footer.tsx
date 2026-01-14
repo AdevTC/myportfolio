@@ -10,6 +10,7 @@ import { useGithubStats } from "@/hooks/useGithubStats";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import DownloadCV from "./DownloadCV";
+import ShareButton from "./ShareButton";
 
 function Counter({ to, label }: { to: number; label: string }) {
     const [count, setCount] = useState(0);
@@ -137,6 +138,7 @@ export default function Footer() {
 
                 {/* Social Links */}
                 <div className="flex gap-4 items-center">
+                    <ShareButton className="p-2 bg-white/5 rounded-full hover:bg-primary hover:text-white transition-colors" />
                     <DownloadCV variant="icon" />
                     <a href="https://linkedin.com/in/adriantomascerda" target="_blank" rel="noopener noreferrer"
                         className="p-2 bg-white/5 rounded-full hover:bg-primary hover:text-white transition-colors">
