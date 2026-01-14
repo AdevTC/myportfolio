@@ -46,6 +46,7 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
+                    className="flex flex-col items-center md:items-start text-center md:text-left"
                 >
                     <h2 className="text-xl md:text-2xl font-medium text-primary mb-4">
                         Hola, soy
@@ -61,10 +62,10 @@ export default function Hero() {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-6 mt-8">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center md:justify-start gap-4 mt-8 w-full">
                         <a
                             href="/projects"
-                            className="group relative px-8 py-4 bg-primary text-white rounded-full font-bold overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/50"
+                            className="group relative w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-full font-bold overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/50 flex justify-center items-center"
                         >
                             <div className="absolute inset-0 w-full h-full bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                             <span className="relative flex items-center gap-2">
@@ -72,20 +73,26 @@ export default function Hero() {
                             </span>
                         </a>
 
-                        <a
-                            href="mailto:adriantomascv@gmail.com"
-                            className="px-8 py-4 border border-white/20 hover:bg-white/5 rounded-full font-bold transition-all hover:border-white/50 flex items-center gap-2"
-                        >
-                            Contactar <MailIcon />
-                        </a>
+                        <div className="flex gap-4 w-full sm:w-auto justify-center">
+                            <a
+                                href="mailto:adriantomascv@gmail.com"
+                                className="flex-1 sm:flex-none justify-center px-8 py-4 border border-white/20 hover:bg-white/5 rounded-full font-bold transition-all hover:border-white/50 flex items-center gap-2"
+                            >
+                                Contactar <MailIcon />
+                            </a>
 
-                        <DownloadCV variant="outline" label="Descargar CV" className="px-8 py-4" />
+                            <DownloadCV
+                                variant="outline"
+                                label="CV"
+                                className="flex-1 sm:flex-none justify-center px-8 py-4"
+                            />
+                        </div>
                     </div>
                 </motion.div>
             </div>
 
             <motion.div
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground flex flex-col items-center gap-2"
+                className="mt-16 mb-24 md:mb-0 md:absolute md:bottom-10 md:left-1/2 md:-translate-x-1/2 text-muted-foreground flex flex-col items-center gap-2 pointer-events-none"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, y: [0, 10, 0] }}
                 transition={{ delay: 2, duration: 2, repeat: Infinity }}

@@ -134,7 +134,6 @@ export default function Navbar() {
 
                 {/* Mobile Menu Button */}
                 <div className="md:hidden flex items-center gap-4">
-                    <DownloadCV variant="icon" />
                     <ColorSwitcher />
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

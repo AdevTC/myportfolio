@@ -8,13 +8,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import LikeButton from "@/components/LikeButton";
 import { CommandPalette } from "@/components/CommandPalette";
+import { cn } from "@/lib/utils";
 
 import { FloatingComponentProvider } from "@/context/FloatingComponentContext";
 import CornerAI from "@/components/widgets/CornerAI";
-import CornerTools from "@/components/widgets/CornerTools";
-import FABMenu from "@/components/widgets/FABMenu";
 import FloatingWindowManager from "@/components/FloatingWindowManager";
 import CodeActivityModal from "@/components/CodeActivityModal";
+import MobileFootbar from "@/components/MobileFootbar";
+import DesktopSidebar from "@/components/DesktopSidebar";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -33,27 +34,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={outfit.className}>
+      <body className={cn(outfit.className, "overflow-x-hidden")}>
         <ThemeProvider>
           <FloatingComponentProvider>
             <ViewCounter />
             <CommandPalette />
             <Navbar />
-            <main className="min-h-screen relative selection:bg-primary/30">
+            <main className="min-h-screen relative selection:bg-primary/30 w-full overflow-x-hidden">
               {children}
             </main>
 
-            <LikeButton />
+
 
             {/* Corner Floating Widgets */}
             <CornerAI />
-            <CornerTools />
-            <FABMenu />
+
+            <DesktopSidebar />
 
             <FloatingWindowManager />
             <CodeActivityModal />
 
             <Footer />
+            <MobileFootbar />
           </FloatingComponentProvider>
         </ThemeProvider>
       </body>

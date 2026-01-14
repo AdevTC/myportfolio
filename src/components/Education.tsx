@@ -152,9 +152,9 @@ export default function Education() {
     return (
         <Section id="education" className="py-20 overflow-visible">
             <div className="flex flex-col mb-16">
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 flex items-center gap-4">
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-2 md:gap-4">
                     <GraduationCap className="text-primary" size={48} />
-                    Trayectoria <span className="text-primary">Académica</span>
+                    <span>Trayectoria <span className="text-primary">Académica</span></span>
                 </h2>
                 <div className="h-1 w-32 bg-primary rounded-full" />
             </div>

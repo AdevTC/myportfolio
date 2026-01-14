@@ -7,7 +7,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function ColorSwitcher() {
-    const { isDarkMode, toggleDarkMode, primaryColor, setPrimaryColor } = useThemeStore();
+    const { primaryColor, setPrimaryColor } = useThemeStore();
     const [isOpen, setIsOpen] = useState(false);
 
     // Toggle palette menu
@@ -15,15 +15,6 @@ export default function ColorSwitcher() {
 
     return (
         <div className="flex items-center gap-4">
-            {/* Theme Toggle */}
-            <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                aria-label="Toggle Dark Mode"
-            >
-                {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
-            </button>
-
             {/* Color Palette Toggle */}
             <div className="relative">
                 <button

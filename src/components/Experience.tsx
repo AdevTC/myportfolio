@@ -211,15 +211,15 @@ export default function Experience() {
                                         >
                                             <div className="flex flex-col md:flex-row justify-between gap-4">
                                                 {/* Logo & Role */}
-                                                <div className="flex gap-4 items-start flex-1">
+                                                <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 flex-1">
                                                     <div className="w-16 h-16 rounded-xl bg-white p-2 shrink-0 flex items-center justify-center">
                                                         <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
                                                     </div>
-                                                    <div className="space-y-1">
+                                                    <div className="space-y-1 w-full md:w-auto">
                                                         <h3 className="text-2xl font-bold text-white group-hover:text-primary transition-colors">
                                                             {exp.role}
                                                         </h3>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center justify-center md:justify-start gap-2">
                                                             <p className="text-xl text-muted-foreground font-medium">
                                                                 {exp.company}
                                                             </p>
@@ -235,9 +235,9 @@ export default function Experience() {
                                                         </div>
 
                                                         {/* Period & Work Mode */}
-                                                        <div className="flex flex-wrap items-center gap-3 text-sm font-mono tracking-wider pt-1">
+                                                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm font-mono tracking-wider pt-1">
                                                             <span className="text-primary">{exp.period}</span>
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                                                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-white/30" />
                                                             <span className="text-white/70 flex items-center gap-1">
                                                                 <MapPin size={12} /> {exp.workMode}
                                                             </span>

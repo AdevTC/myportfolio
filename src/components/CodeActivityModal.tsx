@@ -88,9 +88,11 @@ export default function CodeActivityModal() {
                         </div>
 
                         {/* Body */}
-                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 flex flex-col items-center justify-center bg-black/20">
-                            <div className="w-full">
-                                <GithubHeatmap year={selectedYear} />
+                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 flex flex-col items-center justify-center bg-black/20 overflow-x-hidden">
+                            <div className="w-full overflow-x-auto custom-scrollbar pb-4">
+                                <div className="min-w-[800px]">
+                                    <GithubHeatmap year={selectedYear} />
+                                </div>
                             </div>
                         </div>
                     </motion.div>

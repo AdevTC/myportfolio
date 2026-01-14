@@ -201,7 +201,7 @@ export default function Projects() {
                             className="w-full max-w-5xl h-[90vh] bg-[#121212] rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative z-10 flex flex-col"
                         >
                             {/* Header / Hero Section with Gallery */}
-                            <div className="relative h-[40%] min-h-[300px] w-full bg-black/50 group">
+                            <div className="relative h-[300px] md:h-[40%] min-h-[300px] w-full bg-black/50 group shrink-0">
                                 <div className="absolute inset-0">
                                     <img
                                         src={selectedProject.gallery[currentImageIndex]}
@@ -220,23 +220,23 @@ export default function Projects() {
                                 </button>
 
                                 {/* Logo & Title Overlay */}
-                                <div className="absolute bottom-6 left-6 md:left-10 flex items-end gap-6">
+                                <div className="absolute bottom-6 left-4 md:left-10 flex flex-col md:flex-row md:items-end gap-4 md:gap-6 w-full pr-4">
                                     <motion.div
                                         layoutId={`logo-${selectedProject.id}`}
-                                        className="w-24 h-24 md:w-32 md:h-32 bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center justify-center shadow-2xl"
+                                        className="w-16 h-16 md:w-32 md:h-32 bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-3 md:p-4 flex items-center justify-center shadow-2xl"
                                     >
                                         <img src={selectedProject.logo} alt={selectedProject.title} className="w-full h-full object-contain" />
                                     </motion.div>
-                                    <div className="mb-2">
+                                    <div className="mb-0 md:mb-2">
                                         <motion.h3
                                             layoutId={`title-${selectedProject.id}`}
-                                            className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg"
+                                            className="text-2xl md:text-5xl font-bold text-white drop-shadow-lg"
                                         >
                                             {selectedProject.title}
                                         </motion.h3>
-                                        <div className="flex gap-2 mt-2">
+                                        <div className="flex flex-wrap gap-2 mt-2">
                                             {selectedProject.tags.map((tag) => (
-                                                <span key={tag} className="px-3 py-1 rounded-full text-xs font-bold bg-black/60 text-white/90 border border-white/10 backdrop-blur-sm">
+                                                <span key={tag} className="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-black/60 text-white/90 border border-white/10 backdrop-blur-sm">
                                                     {tag}
                                                 </span>
                                             ))}

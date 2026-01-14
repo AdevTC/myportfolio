@@ -4,7 +4,7 @@ import { useFloatingComponents } from "@/context/FloatingComponentContext";
 import { AnimatePresence } from "framer-motion";
 
 import FloatingWeather from "./widgets/FloatingWeather";
-import FloatingGitHub from "./widgets/FloatingGitHub";
+import GithubActivityModal from "./widgets/GithubActivityModal";
 import AIChatAssistant from "./widgets/AIChatAssistant";
 import FloatingTerminal from "./widgets/FloatingTerminal";
 
@@ -26,7 +26,7 @@ export default function FloatingWindowManager() {
         <AnimatePresence>
             {openWidgets.map(id => {
                 if (id === "weather") return <FloatingWeather key={id} />;
-                if (id === "github") return <FloatingGitHub key={id} />;
+                if (id === "github") return <GithubActivityModal key={id} />;
                 if (id === "ai") return <AIChatAssistant key={id} />;
                 if (id === "terminal") return <FloatingTerminal key={id} />;
 

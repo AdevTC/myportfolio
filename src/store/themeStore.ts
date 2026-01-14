@@ -4,18 +4,14 @@ import { persist } from 'zustand/middleware';
 export type PrimaryColor = 'purple' | 'blue' | 'emerald' | 'gold' | 'pink' | 'red' | 'orange' | 'teal' | 'indigo' | 'rose' | 'premium_gold' | 'silver';
 
 interface ThemeState {
-    isDarkMode: boolean;
     primaryColor: PrimaryColor;
-    toggleDarkMode: () => void;
     setPrimaryColor: (color: PrimaryColor) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
     persist(
         (set) => ({
-            isDarkMode: true, // Default to dark as requested
             primaryColor: 'purple',
-            toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
             setPrimaryColor: (color) => set({ primaryColor: color }),
         }),
         {

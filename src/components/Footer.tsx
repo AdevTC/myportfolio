@@ -7,12 +7,15 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useGithubStats } from "@/hooks/useGithubStats";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import DownloadCV from "./DownloadCV";
-import ShareButton from "./ShareButton";
+import { usePortfolioStats } from "@/hooks/usePortfolioStats";
+import { Download, Share2, Eye, MessageSquare, Star } from "lucide-react";
+// ... imports
 
-function Counter({ to, label }: { to: number; label: string }) {
+// ... imports
+import ShareButton from "./ShareButton";
+import DownloadCV from "./DownloadCV";
+
+function Counter({ to, label, isFloat = false }: { to: number; label: string; isFloat?: boolean }) {
     const [count, setCount] = useState(0);
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true });
@@ -20,9 +23,9 @@ function Counter({ to, label }: { to: number; label: string }) {
     useEffect(() => {
         if (isInView && to > 0) {
             let start = 0;
-            const duration = 2000; // 2 sec
-            // Ensure we step at least 1 at a time
-            const step = Math.max(1, Math.ceil(to / 100));
+            // Ensure we step at least 1 at a time (or 0.1 for floats)
+            const step = isFloat ? 0.1 : Math.max(1, Math.ceil(to / 100));
+            const intervalTime = 20;
 
             const timer = setInterval(() => {
                 start += step;
@@ -32,18 +35,17 @@ function Counter({ to, label }: { to: number; label: string }) {
                 } else {
                     setCount(start);
                 }
-            }, 20);
+            }, intervalTime);
 
             return () => clearInterval(timer);
-        } else if (to > 0) {
-            // If not in view yet but value changes, reset or just let inView trigger
-            // We do nothing till view
         }
-    }, [isInView, to]);
+    }, [isInView, to, isFloat]);
 
     return (
         <div ref={ref} className="text-center">
-            <div className="text-2xl font-bold text-primary">{count.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-primary">
+                {isFloat ? count.toFixed(1) + "/5.0" : count.toLocaleString()}
+            </div>
             <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
         </div>
     );
@@ -51,21 +53,11 @@ function Counter({ to, label }: { to: number; label: string }) {
 
 export default function Footer() {
     const { user } = useGithubStats();
-    const [views, setViews] = useState(0);
-    const [likes, setLikes] = useState(0);
+    const { views, likes, comments, rating } = usePortfolioStats();
     const [contributions, setContributions] = useState(0);
     const [stars, setStars] = useState(0);
 
     useEffect(() => {
-        // Listen for view count & likes
-        const unsub = onSnapshot(doc(db, "portfolio", "stats"), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                setViews(data.views || 0);
-                setLikes(data.likes || 0);
-            }
-        });
-
         // Fetch total contributions
         fetch("https://github-contributions-api.jogruber.de/v4/AdevTC?y=all")
             .then(res => res.json())
@@ -87,12 +79,10 @@ export default function Footer() {
                 }
             })
             .catch(err => console.error("Error fetching stars:", err));
-
-        return () => unsub();
     }, []);
 
     return (
-        <footer className="w-full py-10 mt-20 border-t border-white/5 bg-black/20 backdrop-blur-sm">
+        <footer className="w-full py-10 pb-32 lg:pb-10 mt-20 border-t border-white/5 bg-black/20 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
 
                 {/* Brand & Copyright */}
@@ -112,22 +102,24 @@ export default function Footer() {
                 </div>
 
                 {/* Live Counters */}
-                <div className="flex flex-col sm:flex-row gap-12 bg-white/5 px-10 py-6 rounded-3xl border border-white/5 items-center">
+                <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 bg-white/5 px-6 py-6 rounded-3xl border border-white/5 items-center justify-center w-full max-w-full overflow-hidden">
                     {/* Portfolio Stats */}
-                    <div className="flex flex-col items-center gap-4">
+                    <div className="flex flex-col items-center gap-4 w-full sm:w-auto">
                         <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest">Portfolio Stats</span>
-                        <div className="flex gap-12">
-                            <Counter to={views} label="Visitas" />
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:gap-12 w-full">
                             <Counter to={likes} label="Likes" />
+                            <Counter to={views} label="Visitas" />
+                            <Counter to={comments} label="Comentarios" />
+                            <Counter to={rating} label="ESTRELLAS" isFloat />
                         </div>
                     </div>
 
-                    <div className="w-full h-px sm:w-px sm:h-16 bg-white/10" />
+                    <div className="w-full h-px xl:w-px xl:h-16 bg-white/10" />
 
                     {/* GitHub Stats */}
-                    <div className="flex flex-col items-center gap-4">
+                    <div className="flex flex-col items-center gap-4 w-full sm:w-auto">
                         <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest">GitHub Stats</span>
-                        <div className="flex gap-10">
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:gap-10 w-full">
                             <Counter to={user ? user.public_repos : 25} label="Repositorios" />
                             <Counter to={stars} label="Stars" />
                             <Counter to={user ? user.followers : 100} label="Seguidores" />

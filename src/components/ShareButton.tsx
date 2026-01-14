@@ -9,7 +9,7 @@ interface ShareButtonProps {
     variant?: "icon" | "full";
 }
 
-export default function ShareButton({ className, variant = "icon" }: ShareButtonProps) {
+export default function ShareButton({ className, variant = "icon", children }: ShareButtonProps & { children?: React.ReactNode }) {
     const [copied, setCopied] = useState(false);
 
     const handleShare = async () => {
@@ -32,25 +32,44 @@ export default function ShareButton({ className, variant = "icon" }: ShareButton
             title="Copiar enlace del portafolio"
             aria-label="Compartir portafolio"
         >
-            <div className={cn(
-                "transition-all duration-300 transform",
-                copied ? "scale-0 opacity-0 absolute" : "scale-100 opacity-100"
-            )}>
-                <Share2 size={20} />
-            </div>
+            {/* If children provided, render them. Otherwise render default icon logic */}
+            {children ? (
+                <>
+                    {children}
+                    {/* Copied Feedback Overlay for custom layouts? 
+                        Maybe just simple feedback like text change or internal icon switch if the user provided the icon.
+                        For now, let's assume the user handles the icon in children or we just overlay the check mark if variant='icon'.
+                        Actually, let's keep the overlay logic but position it relative to the button.
+                    */}
+                    <div className={cn(
+                        "absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl text-green-500 transition-all duration-300",
+                        copied ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"
+                    )}>
+                        <Check size={20} />
+                    </div>
+                </>
+            ) : (
+                <>
+                    <div className={cn(
+                        "transition-all duration-300 transform",
+                        copied ? "scale-0 opacity-0 absolute" : "scale-100 opacity-100"
+                    )}>
+                        <Share2 size={20} />
+                    </div>
 
-            <div className={cn(
-                "transition-all duration-300 transform absolute text-green-500",
-                copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
-            )}>
-                <Check size={20} />
-            </div>
+                    <div className={cn(
+                        "transition-all duration-300 transform absolute text-green-500",
+                        copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                    )}>
+                        <Check size={20} />
+                    </div>
 
-            {/* Tooltip-ish feedback for non-icon variants or just extra UX */}
-            {variant === "full" && (
-                <span className="ml-2 font-medium">
-                    {copied ? "¡Enlace Copiado!" : "Compartir"}
-                </span>
+                    {variant === "full" && (
+                        <span className="ml-2 font-medium">
+                            {copied ? "¡Enlace Copiado!" : "Compartir"}
+                        </span>
+                    )}
+                </>
             )}
         </button>
     );

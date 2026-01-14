@@ -65,8 +65,10 @@ export default function CodeActivity() {
                     className="group relative"
                 >
                     <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-blue-500/20 to-purple-500/20 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-500" />
-                    <div className="relative">
-                        <GithubHeatmap year={selectedYear} />
+                    <div className="relative p-6 bg-[#0f121b]/50 backdrop-blur-xl border border-white/10 rounded-3xl overflow-x-auto custom-scrollbar">
+                        <div className="min-w-[800px]">
+                            <GithubHeatmap year={selectedYear} />
+                        </div>
                     </div>
                 </motion.div>
 

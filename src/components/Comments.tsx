@@ -5,6 +5,7 @@ import { Star, MessageSquare, Send, Quote, Loader2, CheckCircle2, ShieldCheck, F
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
+import { cn } from "@/lib/utils";
 
 interface Comment {
     id: string;
@@ -290,57 +291,9 @@ export default function Comments() {
                         </button>
                     </div>
                 ) : (
-                    <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {displayedComments.map((comment, i) => (
-                            <motion.div
-                                key={comment.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.05 }}
-                                className="break-inside-avoid bg-white/5 border border-white/5 p-6 rounded-3xl hover:border-primary/20 transition-all duration-300 group relative"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white font-bold text-sm">
-                                            {comment.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-zinc-200 text-sm flex items-center gap-1">
-                                                {formatName(comment.name, comment.surname1, comment.surname2)}
-                                                {comment.email && (
-                                                    <span title="Verificado">
-                                                        <ShieldCheck size={14} className="text-blue-500" />
-                                                    </span>
-                                                )}
-                                            </h4>
-                                            <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">{comment.category}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-0.5 bg-black/20 px-2 py-1 rounded-full">
-                                        <Star size={12} className="text-yellow-500 fill-yellow-500" />
-                                        <span className="text-xs font-bold text-yellow-500">{comment.rating}.0</span>
-                                    </div>
-                                </div>
-
-                                <p className="text-zinc-300 text-sm leading-relaxed mb-6">
-                                    "{comment.message}"
-                                </p>
-
-                                <div className="flex items-center justify-between border-t border-white/5 pt-4">
-                                    <span className="text-[10px] text-zinc-600">
-                                        {comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleDateString() : 'Reciente'}
-                                    </span>
-
-                                    <button
-                                        onClick={() => handleLike(comment.id)}
-                                        className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-500 transition-colors group/like"
-                                    >
-                                        <Heart size={14} className={`group-hover/like:fill-red-500 ${comment.likes > 0 ? 'text-red-500' : ''}`} />
-                                        <span className="font-medium">{comment.likes || 0}</span>
-                                    </button>
-                                </div>
-                            </motion.div>
+                            <CommentItem key={comment.id} comment={comment} index={i} handleLike={handleLike} formatName={formatName} />
                         ))}
                     </div>
                 )}
@@ -496,5 +449,86 @@ export default function Comments() {
                 </AnimatePresence>
             </div>
         </section>
+    );
+}
+
+function CommentItem({ comment, index, handleLike, formatName }: { comment: Comment, index: number, handleLike: (id: string) => void, formatName: any }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    // Rough estimate: if > 120 chars, likely > 3 lines given the card width.
+    // Or we can just use CSS line-clamp and a "Show More" that depends on state.
+    // However, reliable "show more" visibility usually requires ref measurement.
+    // For simplicity/speed: assume "long" if text length > 140 chars.
+    const isLong = comment.message.length > 140;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.05 }}
+            className="break-inside-avoid bg-white/5 border border-white/5 p-6 rounded-3xl hover:border-primary/20 transition-all duration-300 group relative flex flex-col h-full"
+        >
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white font-bold text-sm">
+                        {comment.name.charAt(0)}
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-zinc-200 text-sm flex items-center gap-1">
+                            {formatName(comment.name, comment.surname1, comment.surname2)}
+                            {comment.email && (
+                                <span title="Verificado">
+                                    <ShieldCheck size={14} className="text-blue-500" />
+                                </span>
+                            )}
+                        </h4>
+                        <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">{comment.category}</span>
+                    </div>
+                </div>
+                <div className="flex gap-0.5 bg-black/20 px-2 py-1 rounded-full">
+                    <Star size={12} className="text-yellow-500 fill-yellow-500" />
+                    <span className="text-xs font-bold text-yellow-500">{comment.rating}.0</span>
+                </div>
+            </div>
+
+            {/* Content Area - Fixed Height / Min Height logic */}
+            <div className="flex-grow mb-4 relative">
+                <p
+                    className={cn(
+                        "text-zinc-300 text-sm leading-relaxed transition-all",
+                        // If not expanded, clamp to 3 lines. If expanded, remove clamp.
+                        !isExpanded ? "line-clamp-3" : ""
+                    )}
+                    // Force a minimum height equivalent to 3 lines to Ensure uniformity?
+                    // "midan todos lo mismo de alto" implies the cards themselves.
+                    // If we set min-h on the text container, small texts will stretch.
+                    style={{ minHeight: '4.5em' }}
+                >
+                    "{comment.message}"
+                </p>
+                {isLong && (
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="text-xs font-bold text-primary mt-1 hover:underline focus:outline-none"
+                    >
+                        {isExpanded ? "Ver menos" : "Ver más"}
+                    </button>
+                )}
+            </div>
+
+            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-auto">
+                <span className="text-[10px] text-zinc-600">
+                    {comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleDateString() : 'Reciente'}
+                </span>
+
+                <button
+                    onClick={() => handleLike(comment.id)}
+                    className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-500 transition-colors group/like"
+                >
+                    <Heart size={14} className={`group-hover/like:fill-red-500 ${comment.likes > 0 ? 'text-red-500' : ''}`} />
+                    <span className="font-medium">{comment.likes || 0}</span>
+                </button>
+            </div>
+        </motion.div>
     );
 }

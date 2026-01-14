@@ -8,7 +8,12 @@ import { cn } from "@/lib/utils";
 import { doc, getDoc, updateDoc, increment, setDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-export default function LikeButton() {
+interface LikeButtonProps {
+    variant?: "floating" | "minimal" | "vertical";
+    className?: string;
+}
+
+export default function LikeButton({ variant = "floating", className }: LikeButtonProps) {
     const [likes, setLikes] = useState(0);
     const [isLiked, setIsLiked] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
@@ -65,8 +70,32 @@ export default function LikeButton() {
         }
     };
 
+    if (variant === "minimal") {
+        return (
+            <button
+                onClick={handleLike}
+                className={cn("flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 transition-colors", className)}
+            >
+                <Heart size={20} fill={isLiked ? "currentColor" : "none"} className={isLiked ? "text-red-500" : "text-white"} />
+                <span className="text-sm font-bold text-white">{likes}</span>
+            </button>
+        );
+    }
+
+    if (variant === "vertical") {
+        return (
+            <button
+                onClick={handleLike}
+                className={cn("flex flex-col items-center gap-1 min-w-[50px] text-zinc-400 hover:text-white transition-colors", className)}
+            >
+                <Heart size={20} fill={isLiked ? "currentColor" : "none"} className={isLiked ? "text-red-500" : "text-zinc-400 hover:text-white"} />
+                <span className="text-[10px] font-medium text-zinc-400">{likes > 999 ? '999+' : likes}</span>
+            </button>
+        );
+    }
+
     return (
-        <div className="fixed bottom-8 right-8 z-40">
+        <div className={cn("fixed bottom-8 right-8 z-40 lg:hidden", className)}>
             <AnimatePresence>
                 {showTooltip && (
                     <motion.div

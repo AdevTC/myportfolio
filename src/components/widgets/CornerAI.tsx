@@ -78,14 +78,14 @@ export default function CornerAI() {
     };
 
     return (
-        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-4">
+        <div className="hidden lg:flex fixed bottom-6 right-6 z-50 flex-col items-end gap-4">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8, y: 20, transformOrigin: "bottom left" }}
+                        initial={{ opacity: 0, scale: 0.8, y: 20, transformOrigin: "bottom right" }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                        className="w-[350px] h-[500px] bg-[#0f121b]/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden origin-bottom-left"
+                        className="w-[350px] h-[500px] bg-[#0f121b]/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden origin-bottom-right"
                     >
                         {/* Header */}
                         <div className="p-4 border-b border-white/5 bg-white/5 flex justify-between items-center">
