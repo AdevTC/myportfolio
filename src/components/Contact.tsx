@@ -125,7 +125,7 @@ export default function Contact() {
                     <div className="p-3 bg-white/5 rounded-lg"><Mail className="text-primary" /></div>
                     <div>
                         <p className="text-sm text-muted-foreground">Email</p>
-                        <a href="mailto:adriantomascerda@gmail.com" className="font-medium hover:text-primary transition-colors">adriantomascerda@gmail.com</a>
+                        <a href="mailto:adriantomascv@gmail.com" className="font-medium hover:text-primary transition-colors">adriantomascv@gmail.com</a>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
