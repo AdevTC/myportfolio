@@ -8,7 +8,8 @@ export type WidgetId =
     | "terminal"
     | "skills"
     | "game"
-    | "codeActivity";
+    | "codeActivity"
+    | "comments";
 
 interface FloatingComponentContextType {
     openWidgets: WidgetId[];

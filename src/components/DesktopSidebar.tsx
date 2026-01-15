@@ -31,18 +31,31 @@ export default function DesktopSidebar() {
     // Shared class
     const itemClass = "w-full flex items-center gap-3 p-3 rounded-xl transition-all relative group cursor-pointer hover:bg-white/10 hover:border-white/10 border border-transparent";
 
-    // Stats Logic
-    const StatItem = ({ icon: Icon, value, label, subLabel }: { icon: any, value: string | number, label: string, subLabel?: string }) => {
+    // Update StatItem to allow onClick
+    const StatItem = ({ icon: Icon, value, label, subLabel, onClick }: { icon: any, value: string | number, label: string, subLabel?: string, onClick?: () => void }) => {
         if (!isExpanded) {
             return (
-                <div className="flex flex-col items-center justify-center gap-1 w-full py-2 hover:bg-white/5 rounded-xl transition-colors cursor-default relative group/stat" title={label}>
+                <div
+                    onClick={onClick}
+                    className={cn(
+                        "flex flex-col items-center justify-center gap-1 w-full py-2 hover:bg-white/5 rounded-xl transition-colors relative group/stat",
+                        onClick ? "cursor-pointer active:scale-95" : "cursor-default"
+                    )}
+                    title={label}
+                >
                     <Icon size={20} className="text-zinc-400 group-hover/stat:text-primary transition-colors" />
                     <span className="text-[10px] font-medium text-zinc-400 group-hover/stat:text-white transition-colors">{value}</span>
                 </div>
             )
         }
         return (
-            <div className="flex items-center gap-3 p-2 rounded-xl text-zinc-400 select-none hover:bg-white/5 transition-colors w-full cursor-default">
+            <div
+                onClick={onClick}
+                className={cn(
+                    "flex items-center gap-3 p-2 rounded-xl text-zinc-400 select-none hover:bg-white/5 transition-colors w-full",
+                    onClick ? "cursor-pointer active:scale-95" : "cursor-default"
+                )}
+            >
                 <Icon size={20} className="group-hover:text-primary transition-colors" />
                 <div className="flex flex-col leading-none">
                     <span className="text-sm font-bold text-white">{value}</span>
@@ -157,7 +170,7 @@ export default function DesktopSidebar() {
                             </div>
 
                             <StatItem icon={Eye} value={views.toLocaleString()} label="Visitas" subLabel="Visitas Totales" />
-                            <StatItem icon={MessageSquare} value={comments.toLocaleString()} label="Comentarios" />
+                            <StatItem icon={MessageSquare} value={comments.toLocaleString()} label="Comentarios" onClick={() => toggleWidget("comments")} />
                             <StatItem icon={StarIcon} value={`${rating.toFixed(1)}/5.0`} label="Valoración" />
                             <ClicksItem />
                         </div>

@@ -26,10 +26,17 @@ export default function MobileFootbar() {
     const menuItemClass = "flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 active:scale-95 duration-75";
 
     // Stat Item component for the bar
-    const StatItem = ({ icon: Icon, value, label }: { icon: any, value: string | number, label: string }) => (
-        <div className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0" title={label}>
-            <Icon size={20} className="text-zinc-400" />
-            <span className="text-[10px] font-bold text-zinc-400 truncate w-full text-center">{value}</span>
+    const StatItem = ({ icon: Icon, value, label, onClick }: { icon: any, value: string | number, label: string, onClick?: () => void }) => (
+        <div
+            onClick={onClick}
+            className={cn(
+                "flex flex-col items-center justify-center gap-1 flex-1 min-w-0 transition-all",
+                onClick && "cursor-pointer active:scale-95 hover:bg-white/5 rounded-lg"
+            )}
+            title={label}
+        >
+            <Icon size={20} className={cn("text-zinc-400", onClick && "group-hover:text-white")} />
+            <span className={cn("text-[10px] font-bold text-zinc-400 truncate w-full text-center", onClick && "group-hover:text-white")}>{value}</span>
         </div>
     );
 
@@ -64,6 +71,7 @@ export default function MobileFootbar() {
 
                         {/* 3. Widgets */}
                         {[
+                            { id: "comments", label: "Chat", icon: MessageSquare },
                             { id: "github", label: "GitHub", icon: Github },
                             { id: "codeActivity", label: "Código", icon: Activity }
                         ].map((item) => {
@@ -109,7 +117,7 @@ export default function MobileFootbar() {
 
                 {/* 2. Stats */}
                 <StatItem icon={Eye} value={views} label="Visitas" />
-                <StatItem icon={MessageSquare} value={comments} label="Comentarios" />
+                <StatItem icon={MessageSquare} value={comments} label="Comentarios" onClick={() => toggleWidget("comments")} />
                 <StatItem icon={Star} value={rating.toFixed(1)} label="Rating" />
 
                 {/* 3. Click Counter */}

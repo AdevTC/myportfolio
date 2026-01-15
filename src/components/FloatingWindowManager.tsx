@@ -9,6 +9,7 @@ import FloatingTerminal from "./widgets/FloatingTerminal";
 import CodeActivityModal from "./widgets/CodeActivityModal";
 import SkillGalaxy from "./widgets/SkillGalaxy";
 import KonamiCodeGame from "./widgets/KonamiCodeGame";
+import CommentsModal from "./widgets/CommentsModal";
 
 // Placeholders for now - we will implement real widgets next
 const WidgetPlaceholder = ({ id }: { id: string }) => (
@@ -30,6 +31,7 @@ export default function FloatingWindowManager() {
 
                 if (id === "skills") return <SkillGalaxy key={id} />;
                 if (id === "game") return <KonamiCodeGame key={id} />;
+                if (id === "comments") return <CommentsModal key={id} />;
 
                 return <WidgetPlaceholder key={id} id={id} />;
             })}

@@ -2,13 +2,30 @@
 
 import MeetingModal from "@/components/ui/MeetingModal";
 import { useState } from "react";
-import { Mail, MapPin, Send, CheckCircle, AlertCircle, Calendar, ArrowRight } from "lucide-react";
+import { Mail, MapPin, Send, Calendar, ArrowRight, Loader2 } from "lucide-react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { sendEmail } from "@/app/actions";
+import StatusModal, { StatusType } from "@/components/ui/StatusModal";
 
 export default function Contact() {
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [statusModal, setStatusModal] = useState<{
+        isOpen: boolean;
+        type: StatusType;
+        title: string;
+        message: string;
+    }>({
+        isOpen: false,
+        type: "success",
+        title: "",
+        message: ""
+    });
+
+    const showStatus = (type: StatusType, title: string, message: string) => {
+        setStatusModal({ isOpen: true, type, title, message });
+    };
+
+    const [isLoading, setIsLoading] = useState(false);
     const [isMeetingOpen, setIsMeetingOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -25,7 +42,7 @@ export default function Contact() {
         e.preventDefault();
         if (!formData.name || !formData.email || !formData.message) return;
 
-        setStatus('loading');
+        setIsLoading(true);
 
         // Prepare FormData for Server Action
         const emailData = new FormData();
@@ -46,21 +63,30 @@ export default function Contact() {
 
             if (!emailResult.success) {
                 console.warn("Email sending failed:", emailResult.error);
-                // We don't fail the whole process if just email fails, as DB saved it.
             }
 
-            setStatus('success');
+            // Success Feedback
+            showStatus("success", "¡Mensaje Enviado!", "Me pondré en contacto contigo lo antes posible.");
             setFormData({ name: '', email: '', subject: '', message: '' });
-            setTimeout(() => setStatus('idle'), 5000);
+
         } catch (error) {
             console.error("Error sending message:", error);
-            setStatus('error');
-            setTimeout(() => setStatus('idle'), 5000);
+            showStatus("error", "Error inesperado", "Hubo un problema al enviar tu mensaje. Por favor, inténtalo de nuevo.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="h-full glass rounded-3xl p-8 border border-white/10 flex flex-col shadow-2xl min-h-[800px]">
+        <div className="h-full glass rounded-3xl p-8 border border-white/10 flex flex-col shadow-2xl min-h-[800px] relative">
+            <StatusModal
+                isOpen={statusModal.isOpen}
+                onClose={() => setStatusModal(prev => ({ ...prev, isOpen: false }))}
+                type={statusModal.type}
+                title={statusModal.title}
+                message={statusModal.message}
+            />
+
             <div className="mb-8">
                 <h2 className="text-3xl font-bold mb-4">
                     Hablemos de <span className="text-primary">Tu Proyecto</span>
@@ -72,7 +98,6 @@ export default function Contact() {
             </div>
 
             <div className="space-y-6 mb-8">
-                {/* Calendar / Meeting Button */}
                 {/* Calendar / Meeting Button - Enhanced CTA */}
                 <button
                     onClick={() => setIsMeetingOpen(true)}
@@ -100,76 +125,81 @@ export default function Contact() {
                     <div className="p-3 bg-white/5 rounded-lg"><Mail className="text-primary" /></div>
                     <div>
                         <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">adriantomascv@gmail.com</p>
+                        <a href="mailto:adriantomascerda@gmail.com" className="font-medium hover:text-primary transition-colors">adriantomascerda@gmail.com</a>
                     </div>
                 </div>
-
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-white/5 rounded-lg"><MapPin className="text-primary" /></div>
                     <div>
                         <p className="text-sm text-muted-foreground">Ubicación</p>
-                        <p className="font-medium">Madrid, España</p>
+                        <p className="font-medium">Valencia, España (Remoto)</p>
                     </div>
                 </div>
             </div>
 
-            <form className="space-y-4 flex-1 flex flex-col" onSubmit={handleSubmit}>
-                <div className="grid grid-cols-2 gap-4">
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        placeholder="Nombre"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-primary focus:outline-none transition-colors"
-                        required
-                    />
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="Email"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-primary focus:outline-none transition-colors"
-                        required
-                    />
+            <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col">
+                <div className="space-y-4 flex-grow">
+                    <div>
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Nombre"
+                            value={formData.name}
+                            onChange={handleChange}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 transition-colors"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 transition-colors"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="text"
+                            name="subject"
+                            placeholder="Asunto"
+                            value={formData.subject}
+                            onChange={handleChange}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 transition-colors"
+                            required
+                        />
+                    </div>
+                    <div className="flex-grow">
+                        <textarea
+                            name="message"
+                            placeholder="Mensaje"
+                            value={formData.message}
+                            onChange={handleChange}
+                            className="w-full h-full min-h-[120px] bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                            required
+                        />
+                    </div>
                 </div>
-                <input
-                    type="text"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    placeholder="Asunto"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-primary focus:outline-none transition-colors"
-                />
-                <textarea
-                    rows={8}
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    placeholder="Mensaje"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-primary focus:outline-none transition-colors resize-none flex-1"
-                    required
-                ></textarea>
 
-                <button
-                    type="submit"
-                    disabled={status === 'loading' || status === 'success'}
-                    className={`w-full py-4 font-bold rounded-lg transition-all flex items-center justify-center gap-2 mt-auto ${status === 'success' ? 'bg-green-500 text-white' :
-                        status === 'error' ? 'bg-red-500 text-white' :
-                            'bg-primary text-white hover:brightness-110'
-                        }`}
-                >
-                    {status === 'loading' ? (
-                        <span className="animate-spin rounded-full h-5 w-5 border-2 border-b-transparent border-white" />
-                    ) : status === 'success' ? (
-                        <> <CheckCircle size={18} /> Mensaje Enviado </>
-                    ) : status === 'error' ? (
-                        <> <AlertCircle size={18} /> Error </>
-                    ) : (
-                        <> <Send size={18} /> Enviar Mensaje </>
-                    )}
-                </button>
+                <div className="pt-4">
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-white text-black py-4 rounded-xl font-bold hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="animate-spin" />
+                        ) : (
+                            <>
+                                Enviar Mensaje
+                                <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </>
+                        )}
+                    </button>
+                </div>
             </form>
 
             <MeetingModal isOpen={isMeetingOpen} onClose={() => setIsMeetingOpen(false)} />
