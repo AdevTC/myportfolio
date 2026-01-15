@@ -18,6 +18,7 @@ export default function CornerAI() {
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const [lastInteractionTime, setLastInteractionTime] = useState<number>(0);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll
@@ -31,10 +32,50 @@ export default function CornerAI() {
         e.preventDefault();
         if (!input.trim() || loading) return;
 
+        // Rate Limit Check (45 seconds)
+        const now = Date.now();
+        const timeSinceLast = now - lastInteractionTime;
+        const COOLDOWN = 45000; // 45 seconds
+
+        if (timeSinceLast < COOLDOWN) {
+            const remaining = Math.ceil((COOLDOWN - timeSinceLast) / 1000);
+            const userText = input;
+            setInput("");
+            setMessages(prev => [...prev, { role: "user", parts: [{ text: userText }] }]);
+
+            // Randomize Response
+            const COOLDOWN_RESPONSES = [
+                `⏳ **¡Epa, velocista!**\n\nMis circuitos funcionan a ritmo caribeño. Déjame respirar unos **${remaining} segundos** más. 🍹`,
+                `🛑 **¡Frena, vaquero!**\n\nSi pienso tan rápido se me calienta la GPU. Vuelve a intentar en **${remaining} segundos**. 🤠`,
+                `🧘 **Ommm...**\n\nEstoy meditando sobre tu última pregunta. Dame **${remaining} segundos** para alcanzar la iluminación.`,
+                `☕ **Pausa para café**\n\nIncluso las IAs necesitamos cafeína. Estaré contigo en **${remaining} segundos**.`,
+                `🐌 **Modo Caracol: ACTIVADO**\n\nHas agotado mi velocidad de la luz. Recargando motores... (**${remaining}s** restantes).`,
+                `🧠 **Procesando... procesando...**\n\n¡Me has dado demasiado en qué pensar! Necesito **${remaining} segundos** para ordenar mis ideas.`,
+                `🚧 **En Huelga (Breve)**\n\nMi sindicato de algoritmos exige un descanso de **${remaining} segundos** entre consultas geniales.`,
+                `🌡️ **¡Alerta de Sobrecalentamiento!**\n\nNecesito un ventilador o esperar **${remaining} segundos** antes de seguir brillando.`,
+                `💤 **Zzz...**\n\n¿Eh? ¿Qué? Ah, perdona, me había quedado dormido. Dame **${remaining} segundos** para desperezarme.`,
+                `🚦 **Semáforo en Rojo**\n\nEl tráfico de datos está pesado hoy. Tu turno llega en **${remaining} segundos**.`
+            ];
+
+            const randomResponse = COOLDOWN_RESPONSES[Math.floor(Math.random() * COOLDOWN_RESPONSES.length)];
+
+            // Artificial delay to feel natural
+            setLoading(true);
+            setTimeout(() => {
+                setMessages(prev => [...prev, {
+                    role: "model",
+                    parts: [{ text: randomResponse }]
+                }]);
+                setLoading(false);
+            }, 600);
+            return;
+        }
+
         const userText = input;
         setInput("");
         setMessages(prev => [...prev, { role: "user", parts: [{ text: userText }] }]);
         setLoading(true);
+        setLastInteractionTime(now); // Update time
 
         try {
             // System instruction is now handled in the server API route
@@ -57,6 +98,17 @@ export default function CornerAI() {
 
             if (data.error) {
                 console.error("Gemini Error:", data.error);
+
+                // Handle Rate Limit (429 / RESOURCE_EXHAUSTED)
+                if (data.error.code === 429 || data.error.status === 'RESOURCE_EXHAUSTED') {
+                    setMessages(prev => [...prev, {
+                        role: "model",
+                        parts: [{ text: "🤯 **¡Ups! He pensado demasiado rápido.**\n\nMis neuronas necesitan un descanso de unos segundos. ¡Inténtalo de nuevo ahora!" }]
+                    }]);
+                    setLoading(false);
+                    return;
+                }
+
                 throw new Error(data.error.message || "Error en la API");
             }
 
