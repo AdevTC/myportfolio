@@ -132,7 +132,7 @@ export default function Contact() {
                     <div className="p-3 bg-white/5 rounded-lg"><MapPin className="text-primary" /></div>
                     <div>
                         <p className="text-sm text-muted-foreground">Ubicación</p>
-                        <p className="font-medium">Valencia, España (Remoto)</p>
+                        <p className="font-medium">Madrid, España (Remoto)</p>
                     </div>
                 </div>
             </div>
