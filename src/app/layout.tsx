@@ -24,10 +24,10 @@ export const metadata: Metadata = {
   description: "Portfolio profesional de Adrián Tomás Cerdá. Ingeniero de Software & SAP Integrator.",
   icons: {
     icon: [
-      { url: '/logo.png', href: '/logo.png' },
+      { url: '/brand/logo.png', href: '/brand/logo.png' },
     ],
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    shortcut: '/brand/logo.png',
+    apple: '/brand/logo.png',
   },
 };
 
