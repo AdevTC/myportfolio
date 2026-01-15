@@ -22,7 +22,11 @@ export const metadata: Metadata = {
   title: "Adrián Tomás Cerdá | Software Engineer",
   description: "Portfolio profesional de Adrián Tomás Cerdá. Ingeniero de Software & SAP Integrator.",
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: '/logo.png', href: '/logo.png' },
+    ],
+    shortcut: '/logo.png',
+    apple: '/logo.png',
   },
 };
 
