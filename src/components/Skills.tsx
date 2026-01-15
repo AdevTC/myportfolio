@@ -68,10 +68,10 @@ export const SKILLS_DATA: SkillCategory[] = [
             { name: "SAP BAS", logo: "https://cdn.worldvectorlogo.com/logos/sap-3.svg", description: "Business Application Studio.", usage: "IDE en la nube para desarrollo SAP.", link: "https://help.sap.com/docs/bas" },
             { name: "NetWeaver", logo: "https://cdn.worldvectorlogo.com/logos/sap-3.svg", description: "Plataforma de integración.", usage: "Gestión de stacks ABAP/Java.", link: "https://www.sap.com/products/technology-platform.html" },
             { name: "SuccessFactors", logo: "https://cdn.worldvectorlogo.com/logos/sap-3.svg", description: "Suite HCM.", usage: "Integración de datos de RRHH.", link: "https://www.sap.com/products/hcm.html" },
-            { name: "OData", logo: "/ODataLogo-250.png", description: "Protocolo Open Data.", usage: "APIs RESTful estándar.", link: "https://www.odata.org/" },
-            { name: "SOAP", logo: "/api-soap-cloud.jpg", description: "Simple Object Access Protocol.", usage: "Integraciones legacy robustas.", link: "https://www.w3.org/TR/soap/" }, // Generic placeholder visual for protocol
-            { name: "SOAPUI", logo: "/soapui.png", description: "Testing de APIs.", usage: "Pruebas funcionales de servicios SOAP/REST.", link: "https://www.soapui.org/" },
-            { name: "HL7", logo: "/hl7.jpg", description: "Estándar de salud.", usage: "Intercambio de información médica.", link: "https://www.hl7.org/" },
+            { name: "OData", logo: "/skills/odata.png", description: "Protocolo Open Data.", usage: "APIs RESTful estándar.", link: "https://www.odata.org/" },
+            { name: "SOAP", logo: "/skills/soap.jpg", description: "Simple Object Access Protocol.", usage: "Integraciones legacy robustas.", link: "https://www.w3.org/TR/soap/" }, // Generic placeholder visual for protocol
+            { name: "SOAPUI", logo: "/skills/soapui.png", description: "Testing de APIs.", usage: "Pruebas funcionales de servicios SOAP/REST.", link: "https://www.soapui.org/" },
+            { name: "HL7", logo: "/skills/hl7.jpg", description: "Estándar de salud.", usage: "Intercambio de información médica.", link: "https://www.hl7.org/" },
             { name: "Mappings", logo: "https://cdn-icons-png.flaticon.com/512/1006/1006560.png", description: "Transformación de datos.", usage: "Conversión de estructuras complejas (XSLT, Groovy).", link: "https://www.w3.org/TR/xslt/" },
             { name: "FTP/SFTP", logo: "https://cdn-icons-png.flaticon.com/512/2333/2333452.png", description: "Transferencia de archivos.", usage: "Intercambio seguro de ficheros batch.", link: "https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol" },
         ]
@@ -93,10 +93,10 @@ export const SKILLS_DATA: SkillCategory[] = [
         id: "office",
         label: "Ofimática & Productividad",
         skills: [
-            { name: "Excel", logo: "/excel.png", description: "Hojas de cálculo.", usage: "Análisis de datos y macros.", link: "https://www.microsoft.com/es-es/microsoft-365/excel" },
-            { name: "Word", logo: "/word.webp", description: "Procesador de texto.", usage: "Documentación técnica y funcional.", link: "https://www.microsoft.com/es-es/microsoft-365/word" },
-            { name: "PowerPoint", logo: "/microsoft-power-point-mobile-apps-logo-free-png.png", description: "Presentaciones.", usage: "Exposición de propuestas y demos.", link: "https://www.microsoft.com/es-es/microsoft-365/powerpoint" },
-            { name: "Google Workspace", logo: "/google_logo.jpg", description: "Suite colaborativa.", usage: "Docs, Drive y colaboración en tiempo real.", link: "https://workspace.google.com/" },
+            { name: "Excel", logo: "/skills/excel.png", description: "Hojas de cálculo.", usage: "Análisis de datos y macros.", link: "https://www.microsoft.com/es-es/microsoft-365/excel" },
+            { name: "Word", logo: "/skills/word.webp", description: "Procesador de texto.", usage: "Documentación técnica y funcional.", link: "https://www.microsoft.com/es-es/microsoft-365/word" },
+            { name: "PowerPoint", logo: "/skills/powerpoint.png", description: "Presentaciones.", usage: "Exposición de propuestas y demos.", link: "https://www.microsoft.com/es-es/microsoft-365/powerpoint" },
+            { name: "Google Workspace", logo: "/skills/google-workspace.jpg", description: "Suite colaborativa.", usage: "Docs, Drive y colaboración en tiempo real.", link: "https://workspace.google.com/" },
         ]
     },
     {
@@ -104,11 +104,11 @@ export const SKILLS_DATA: SkillCategory[] = [
         label: "Multimedia & Diseño",
         skills: [
             { name: "Canva", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/canva/canva-original.svg", description: "Diseño gráfico ágil.", usage: "Creación rápida de assets visuales.", link: "https://www.canva.com/" },
-            { name: "Sony Vegas", logo: "/sonyvegas.png", description: "Edición de vídeo.", usage: "Montaje profesional de clips.", link: "https://www.vegascreativesoftware.com/" },
+            { name: "Sony Vegas", logo: "/skills/sony-vegas.png", description: "Edición de vídeo.", usage: "Montaje profesional de clips.", link: "https://www.vegascreativesoftware.com/" },
             { name: "DaVinci Resolve", logo: "https://upload.wikimedia.org/wikipedia/commons/4/4d/DaVinci_Resolve_Studio.png", description: "Color y posproducción.", usage: "Edición de vídeo avanzada y color grading.", link: "https://www.blackmagicdesign.com/products/davinciresolve" },
-            { name: "CapCut", logo: "/capcut.jpg", description: "Edición móvil/rápida.", usage: "Contenido para redes sociales.", link: "https://www.capcut.com/" },
-            { name: "Clipchamp", logo: "/clipchamp.avif", description: "Editor de vídeo web.", usage: "Edición rápida en la nube.", link: "https://clipchamp.com/" },
-            { name: "Photopea", logo: "/photopealogo.webp", description: "Editor de imagen web.", usage: "Retoque fotográfico accesible.", link: "https://www.photopea.com/" },
+            { name: "CapCut", logo: "/skills/capcut.jpg", description: "Edición móvil/rápida.", usage: "Contenido para redes sociales.", link: "https://www.capcut.com/" },
+            { name: "Clipchamp", logo: "/skills/clipchamp.avif", description: "Editor de vídeo web.", usage: "Edición rápida en la nube.", link: "https://clipchamp.com/" },
+            { name: "Photopea", logo: "/skills/photopea.webp", description: "Editor de imagen web.", usage: "Retoque fotográfico accesible.", link: "https://www.photopea.com/" },
         ]
     }
 ];

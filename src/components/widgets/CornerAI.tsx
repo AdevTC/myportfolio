@@ -92,7 +92,7 @@ export default function CornerAI() {
                         <div className="p-4 border-b border-white/5 bg-white/5 flex justify-between items-center">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-purple-500/20 rounded-xl border border-purple-500/30 flex items-center justify-center overflow-hidden">
-                                    <img src="/aidri-logo.png" alt="AIdri" className="w-full h-full object-cover scale-150" />
+                                    <img src="/brand/aidri.png" alt="AIdri" className="w-full h-full object-cover scale-150" />
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-white text-sm">
@@ -120,7 +120,7 @@ export default function CornerAI() {
                                         {m.role === "user" ? (
                                             <User size={14} className="text-primary" />
                                         ) : (
-                                            <img src="/aidri-logo.png" alt="AIdri" className="w-full h-full object-cover scale-150" />
+                                            <img src="/brand/aidri.png" alt="AIdri" className="w-full h-full object-cover scale-150" />
                                         )}
                                     </div>
                                     <div className={cn(
@@ -136,7 +136,7 @@ export default function CornerAI() {
                             {loading && (
                                 <div className="flex gap-3">
                                     <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0 overflow-hidden border border-purple-500/30">
-                                        <img src="/aidri-logo.png" alt="AIdri" className="w-full h-full object-cover scale-150" />
+                                        <img src="/brand/aidri.png" alt="AIdri" className="w-full h-full object-cover scale-150" />
                                     </div>
                                     <div className="bg-white/10 rounded-2xl p-3 rounded-tl-none flex items-center gap-1">
                                         <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></span>
@@ -189,7 +189,7 @@ export default function CornerAI() {
                     {isOpen ? (
                         <X size={24} />
                     ) : (
-                        <img src="/aidri-logo.png" alt="Open AIdri" className="w-full h-full object-cover scale-[1.4]" />
+                        <img src="/brand/aidri.png" alt="Open AIdri" className="w-full h-full object-cover scale-[1.4]" />
                     )}
                 </div>
 

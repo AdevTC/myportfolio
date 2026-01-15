@@ -36,7 +36,7 @@ const EXPERIENCES: ExperienceItem[] = [
         growthVsPrevious: 26.92,
         growthTotal: 73.68,
         teamSize: 8,
-        logo: "/logo_sapas.png",
+        logo: "/logos/sapas.png",
         workMode: "En Remoto / Teletrabajo",
         url: "https://www.sapas.com/",
         achievements: [
@@ -62,7 +62,7 @@ const EXPERIENCES: ExperienceItem[] = [
         growthVsPrevious: 30.00,
         growthTotal: 36.84,
         teamSize: 6,
-        logo: "/logo_timestamp.png",
+        logo: "/logos/timestamp.png",
         workMode: "Híbrido",
         url: "https://www.timestampgroup.com/es",
         achievements: [
@@ -86,7 +86,7 @@ const EXPERIENCES: ExperienceItem[] = [
         growthVsPrevious: 0,
         growthTotal: 5.26,
         teamSize: 14,
-        logo: "/logo_inetum.png",
+        logo: "/logos/inetum.png",
         workMode: "Híbrido",
         url: "https://www.inetum.com/es",
         achievements: [

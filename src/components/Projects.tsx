@@ -24,7 +24,7 @@ export const PROJECTS: ProjectItem[] = [
         title: "Fantasya",
         description: "Gestor de ligas fantasy y red social para comunidades privadas.",
         tags: ["ReactJS", "Firebase", "Tailwind"],
-        logo: "/logoFantasya_v0.png",
+        logo: "/projects/fantasya/logo.png",
         demoUrl: "https://fantasya-app.vercel.app/",
         repoUrl: "https://github.com/AdevTC/fantasya-app",
         detailedDescription: "Fantasya nace de la necesidad de centralizar la gestión de ligas fantasy privadas. No es solo una herramienta de cálculo, es un centro de operaciones social donde la competición y la comunidad se unen. Diseñada para ligas que disfrutan del control manual y la profundidad de datos.",
@@ -51,9 +51,9 @@ export const PROJECTS: ProjectItem[] = [
             }
         ],
         gallery: [
-            "/fantasya1.jpg", "/fantasya2.jpg", "/fantasya3.jpg", "/fantasya4.jpg", "/fantasya5.jpg",
-            "/fantasya6.jpg", "/fantasya7.jpg", "/fantasya8.jpg", "/fantasya9.jpg", "/fantasya10.jpg",
-            "/fantasya11.jpg", "/fantasya12.jpg", "/fantasya13.jpg", "/fantasya14.jpg", "/fantasya15.jpg"
+            "/projects/fantasya/1.jpg", "/projects/fantasya/2.jpg", "/projects/fantasya/3.jpg", "/projects/fantasya/4.jpg", "/projects/fantasya/5.jpg",
+            "/projects/fantasya/6.jpg", "/projects/fantasya/7.jpg", "/projects/fantasya/8.jpg", "/projects/fantasya/9.jpg", "/projects/fantasya/10.jpg",
+            "/projects/fantasya/11.jpg", "/projects/fantasya/12.jpg", "/projects/fantasya/13.jpg", "/projects/fantasya/14.jpg", "/projects/fantasya/15.jpg"
         ]
     },
     {
@@ -61,7 +61,7 @@ export const PROJECTS: ProjectItem[] = [
         title: "World Cup 2026 Sim",
         description: "Simulador completo del Mundial. Sorteos, predicciones, fases y reportes PDF.",
         tags: ["ReactJS", "i18n", "PDF Generation"],
-        logo: "/logo_worldcup.png",
+        logo: "/projects/world-cup/logo.png",
         demoUrl: "https://worldcup2026simulator.vercel.app/",
         repoUrl: "https://github.com/AdevTC/my-project",
         detailedDescription: "Una herramienta exhaustiva para vivir el mundial antes de que ocurra. Permite gestionar múltiples partidas, personalizar el sorteo (oficial o aleatorio) y simular cada fase del torneo con todo lujo de detalles, desde la fase de grupos hasta la gloria final.",
@@ -88,10 +88,10 @@ export const PROJECTS: ProjectItem[] = [
             }
         ],
         gallery: [
-            "/wdc1.png",
-            "/wdc2.png",
-            "/wdc3.png",
-            "/wdc4.png"
+            "/projects/world-cup/1.png",
+            "/projects/world-cup/2.png",
+            "/projects/world-cup/3.png",
+            "/projects/world-cup/4.png"
         ]
     }
 ];

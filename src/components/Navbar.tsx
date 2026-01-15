@@ -58,7 +58,7 @@ export default function Navbar() {
                 {/* Logo */}
                 <Link href="/" className="hover:opacity-80 transition-opacity">
                     <Image
-                        src="/logo.png"
+                        src="/brand/logo.png"
                         alt="Logo"
                         width={50}
                         height={50}

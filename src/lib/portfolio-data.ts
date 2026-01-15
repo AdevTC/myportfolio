@@ -2,7 +2,7 @@ export const PORTFOLIO_DATA = {
     owner: "Adrián Tomás Cerdá",
     role: "Software Engineer & SAP Integration Specialist",
     aiName: "AIdri",
-    aiLogo: "/aidri-logo.png",
+    aiLogo: "/brand/aidri.png",
     location: "Madrid, España",
     contact: {
         email: "adriantomascv@gmail.com",

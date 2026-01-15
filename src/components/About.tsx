@@ -21,7 +21,7 @@ export default function About() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div className="relative group perspective-1000 md:order-2">
                     <div className="relative aspect-square rounded-full md:rounded-2xl overflow-hidden shadow-2xl border-4 border-primary/20 transition-transform duration-500 hover:scale-105">
-                        <img src="/about-portrait.png" alt="Adrian Tomas" className="object-cover w-full h-full" />
+                        <img src="/about/portrait.png" alt="Adrian Tomas" className="object-cover w-full h-full" />
                     </div>
                     <div className="absolute -z-10 inset-0 bg-primary/30 blur-[60px] rounded-full scale-90" />
                 </div>
@@ -52,7 +52,7 @@ export default function About() {
                 </div>
                 <div className="relative group perspective-1000">
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl rotate-2 transition-transform duration-500 hover:rotate-0">
-                        <img src="/about-1.png" alt="Inicios Curiosos" className="object-cover w-full h-full" />
+                        <img src="/about/inicios.png" alt="Inicios Curiosos" className="object-cover w-full h-full" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     </div>
                 </div>
@@ -62,7 +62,7 @@ export default function About() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center md:flex-row-reverse">
                 <div className="relative group md:order-1 perspective-1000">
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl -rotate-2 transition-transform duration-500 hover:rotate-0">
-                        <img src="/about-2.png" alt="Formación Técnica" className="object-cover w-full h-full" />
+                        <img src="/about/formacion.png" alt="Formación Técnica" className="object-cover w-full h-full" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     </div>
                 </div>
@@ -90,10 +90,10 @@ export default function About() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl overflow-hidden shadow-lg translate-y-8">
-                        <img src="/about-3.png" alt="Estudio" className="object-cover w-full h-full hover:scale-105 transition-transform duration-500" />
+                        <img src="/about/estudio.png" alt="Estudio" className="object-cover w-full h-full hover:scale-105 transition-transform duration-500" />
                     </div>
                     <div className="rounded-xl overflow-hidden shadow-lg">
-                        <img src="/about-4.png" alt="Crecimiento" className="object-cover w-full h-full hover:scale-105 transition-transform duration-500" />
+                        <img src="/about/crecimiento.png" alt="Crecimiento" className="object-cover w-full h-full hover:scale-105 transition-transform duration-500" />
                     </div>
                 </div>
             </div>
@@ -103,13 +103,13 @@ export default function About() {
                 {/* Images Stack for Philosophy */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:order-1">
                     <div className="relative rounded-2xl overflow-hidden shadow-lg h-48 group md:col-span-2">
-                        <img src="/about-6.png" alt="Futuro Cloud" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
+                        <img src="/about/futuro.png" alt="Futuro Cloud" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
                     </div>
                     <div className="relative rounded-2xl overflow-hidden shadow-lg h-40 group">
-                        <img src="/about-5.png" alt="Trabajo en Equipo" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                        <img src="/about/equipo.png" alt="Trabajo en Equipo" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <div className="relative rounded-2xl overflow-hidden shadow-lg h-40 group">
-                        <img src="/about-philosophy.png" alt="Filosofía Abstracta" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                        <img src="/about/philosophy.png" alt="Filosofía Abstracta" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
                         <div className="absolute inset-0 bg-primary/20 mix-blend-overlay" />
                     </div>
                 </div>
