@@ -6,6 +6,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
 import { cn } from "@/lib/utils";
+import { z } from "zod";
+
+// Validation Schema
+const commentSchema = z.object({
+    name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El nombre solo puede contener letras"),
+    surname1: z.string().min(2, "El primer apellido es obligatorio").regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El apellido solo puede contener letras"),
+    surname2: z.string().optional(),
+    email: z.string().email("Email inválido").optional().or(z.literal("")),
+    category: z.string(),
+    message: z.string().min(10, "El mensaje es muy corto (mínimo 10 caracteres)").max(500, "El mensaje es muy largo (máximo 500 caracteres)"),
+    rating: z.number().min(0).max(5),
+    isPublic: z.boolean()
+});
 
 interface Comment {
     id: string;
@@ -95,15 +108,37 @@ export default function Comments() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name || !formData.surname1 || !formData.message) return;
+
+        // 1. Rate Limiting (Browser-based)
+        const RATE_LIMIT_KEY = "last_comment_timestamp";
+        const cooldown = 60 * 1000; // 60 seconds
+        const lastTime = localStorage.getItem(RATE_LIMIT_KEY);
+
+        if (lastTime && Date.now() - parseInt(lastTime) < cooldown) {
+            alert("⏳ Por favor, espera un minuto antes de enviar otro comentario. (Protección Anti-Spam de la Comunidad)");
+            return;
+        }
+
+        // 2. Zod Validation (Sanitization)
+        const result = commentSchema.safeParse(formData);
+        if (!result.success) {
+            const firstError = result.error.issues[0].message;
+            alert(`⚠️ ${firstError}`);
+            return;
+        }
 
         setIsSubmitting(true);
         try {
             await addDoc(collection(db, "comments"), {
                 ...formData,
+                category: formData.category,
                 likes: 0,
                 createdAt: serverTimestamp()
             });
+
+            // Update Rate Limit Timestamp
+            localStorage.setItem(RATE_LIMIT_KEY, Date.now().toString());
+
             setShowModal(false);
             setFormData({
                 name: "",
@@ -117,6 +152,7 @@ export default function Comments() {
             });
         } catch (error) {
             console.error(error);
+            alert("Hubo un error al enviar el comentario. Inténtalo de nuevo.");
         } finally {
             setIsSubmitting(false);
         }
