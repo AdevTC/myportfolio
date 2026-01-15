@@ -112,7 +112,7 @@ export default function Footer() {
                 <div className="text-center md:text-left flex flex-col items-center md:items-start">
                     <Link href="/" className="hover:opacity-80 transition-opacity mb-2">
                         <Image
-                            src="/logo.png"
+                            src="/brand/logo.png"
                             alt="Logo"
                             width={70}
                             height={70}
