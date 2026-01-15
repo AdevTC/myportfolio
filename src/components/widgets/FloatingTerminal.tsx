@@ -89,33 +89,65 @@ export default function FloatingTerminal() {
         date: new Date().toString(),
         exit: "Closing session... (Just kidding, click the X button)",
         countdown: () => {
-            const getCooldown = (key: string, label: string) => {
-                const cached = localStorage.getItem(key);
-                if (!cached) return `  [${label}] No cache found (Ready to fetch)`;
-
-                try {
-                    const { timestamp } = JSON.parse(cached);
-                    const elapsed = Date.now() - timestamp;
-                    const remaining = 300000 - elapsed; // 5 mins in ms
-
-                    if (remaining <= 0) return `  [${label}] READY (Cooldown expired)`;
-
-                    const mins = Math.floor(remaining / 60000);
-                    const secs = Math.floor((remaining % 60000) / 1000);
-                    return `  [${label}] WAIT: ${mins}m ${secs}s`;
-                } catch (e) {
-                    return `  [${label}] Error reading cache`;
-                }
+            const getCooldownTime = (timestamp: number, duration: number) => {
+                const elapsed = Date.now() - timestamp;
+                const remaining = duration - elapsed;
+                return remaining > 0 ? remaining : 0;
             };
 
+            const formatTime = (ms: number) => {
+                if (ms <= 0) return "READY";
+                const mins = Math.floor(ms / 60000);
+                const secs = Math.floor((ms % 60000) / 1000);
+                return `WAIT: ${mins}m ${secs}s`;
+            };
+
+            // Scan LocalStorage
+            let pagesCount = 0;
+            let maxPageWait = 0;
+
+            let commitsCount = 0;
+
+            let footerStatus = "No cache";
+            let modalStatus = "No cache";
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key) continue;
+
+                if (key.startsWith("github_activity_events_page_")) {
+                    pagesCount++;
+                    try {
+                        const { timestamp } = JSON.parse(localStorage.getItem(key)!);
+                        const wait = getCooldownTime(timestamp, 300000);
+                        if (wait > maxPageWait) maxPageWait = wait;
+                    } catch (e) { }
+                } else if (key.startsWith("github_commit_")) {
+                    commitsCount++;
+                } else if (key === "github_footer_stats") {
+                    try {
+                        const { timestamp } = JSON.parse(localStorage.getItem(key)!);
+                        footerStatus = formatTime(getCooldownTime(timestamp, 300000));
+                    } catch (e) { footerStatus = "Error"; }
+                } else if (key === "github_activity_modal_events") {
+                    try {
+                        const { timestamp } = JSON.parse(localStorage.getItem(key)!);
+                        modalStatus = formatTime(getCooldownTime(timestamp, 300000));
+                    } catch (e) { modalStatus = "Error"; }
+                }
+            }
+
             return [
-                "--- GITHUB API COOLDOWN STATUS ---",
-                getCooldown("github_footer_stats", "Live Stats (Footer)"),
-                getCooldown("github_activity_modal_events", "Activity Modal"),
-                // Check generic page 1 for feed
-                getCooldown("github_activity_events_page_1_size_5", "Activity Feed (Page 1)"),
+                "--- GITHUB API CACHE STATUS ---",
+                `  [Live Stats (Footer)]   ${footerStatus}`,
+                `  [Activity Modal]        ${modalStatus}`,
+                `  [Activity Pages Cached] ${pagesCount} pages (Max Wait: ${formatTime(maxPageWait)})`,
+                `  [Commit Details Cached] ${commitsCount} commits (24h retention)`,
                 "",
-                "System enforces a 5-minute cooldown to prevent API rate limiting."
+                "Explanation:",
+                "• Pages are cached individually (5m) as you browse.",
+                "• Commit details are cached for 24h to save API calls.",
+                "• 'READY' means the next refresh will fetch fresh data."
             ];
         }
     };

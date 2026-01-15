@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export type WidgetId =
-    | "weather"
     | "github"
     | "ai"
     | "terminal"
