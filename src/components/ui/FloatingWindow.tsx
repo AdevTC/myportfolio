@@ -2,12 +2,12 @@
 
 import { motion, useDragControls } from "framer-motion";
 import { X, Minus } from "lucide-react";
-import { useFloatingComponents } from "@/context/FloatingComponentContext";
+import { useFloatingComponents, WidgetId } from "@/context/FloatingComponentContext";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 
 interface FloatingWindowProps {
-    id: "weather" | "github" | "ai" | "terminal" | "skills" | "game";
+    id: WidgetId;
     title: string;
     children: React.ReactNode;
     width?: number;
