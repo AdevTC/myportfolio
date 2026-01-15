@@ -70,6 +70,22 @@ const HEATMAP_THEMES: Record<PrimaryColor, { light: string[]; dark: string[] }> 
         light: ["#f1f5f9", "#e2e4e5", "#c0c4c5", "#9da4a6", "#797f81"],
         dark: ["#1e293b", "#3d4041", "#5a6061", "#797f81", "#9ba1a2"],
     },
+    cyan: {
+        light: ["#f1f5f9", "#cffafe", "#67e8f9", "#22d3ee", "#06b6d4"],
+        dark: ["#1e293b", "#155e75", "#0891b2", "#06b6d4", "#22d3ee"],
+    },
+    lime: {
+        light: ["#f1f5f9", "#ecfccb", "#bef264", "#84cc16", "#4d7c0f"],
+        dark: ["#1e293b", "#365314", "#4d7c0f", "#84cc16", "#bef264"],
+    },
+    magenta: {
+        light: ["#f1f5f9", "#fae8ff", "#e879f9", "#d946ef", "#a21caf"],
+        dark: ["#1e293b", "#701a75", "#a21caf", "#d946ef", "#e879f9"],
+    },
+    violet: {
+        light: ["#f1f5f9", "#ede9fe", "#8b5cf6", "#7c3aed", "#5b21b6"],
+        dark: ["#1e293b", "#4c1d95", "#5b21b6", "#7c3aed", "#8b5cf6"],
+    },
 };
 
 interface GithubHeatmapProps {

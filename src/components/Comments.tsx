@@ -53,6 +53,8 @@ export default function Comments() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
     useEffect(() => {
         const q = query(
             collection(db, "comments"),
@@ -61,8 +63,8 @@ export default function Comments() {
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const fetched = snapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() } as Comment))
-                .filter(c => c.isPublic);
+                .map(doc => ({ id: doc.id, ...doc.data() } as Comment));
+            // .filter(c => c.isPublic); // Removed to show all comments
             setComments(fetched);
             setLoading(false);
         });
@@ -183,7 +185,7 @@ export default function Comments() {
                 </div>
 
                 {/* Controls Bar */}
-                <div className="bg-white/5 border border-white/5 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 mb-12 backdrop-blur-sm">
+                <div className="bg-white/5 border border-white/5 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 mb-12 backdrop-blur-sm relative z-40">
                     <button
                         onClick={() => setShowModal(true)}
                         className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all flex items-center gap-2 w-full md:w-auto justify-center shadow-lg shadow-primary/20"
@@ -194,7 +196,7 @@ export default function Comments() {
 
                     <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                         {/* Filter Dropdown */}
-                        <div className="relative z-20 w-full sm:w-48">
+                        <div className="relative z-50 w-full sm:w-48">
                             <button
                                 onClick={() => {
                                     setIsFilterOpen(!isFilterOpen);
@@ -209,10 +211,10 @@ export default function Comments() {
                             <AnimatePresence>
                                 {isFilterOpen && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        className="absolute right-0 top-full mt-2 w-full bg-[#0f121b] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-30"
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute right-0 top-full mt-2 w-full bg-[#0f121b] border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-xl"
                                     >
                                         {["Todos", ...CATEGORIES].map((cat) => (
                                             <button
@@ -221,7 +223,10 @@ export default function Comments() {
                                                     setActiveCategory(cat);
                                                     setIsFilterOpen(false);
                                                 }}
-                                                className="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors text-sm text-zinc-300 hover:text-white border-b border-white/5 last:border-0"
+                                                className={cn(
+                                                    "w-full text-left px-4 py-3 hover:bg-white/5 transition-colors text-sm border-b border-white/5 last:border-0",
+                                                    activeCategory === cat ? "text-primary font-bold bg-primary/5" : "text-zinc-300 hover:text-white"
+                                                )}
                                             >
                                                 {cat}
                                             </button>
@@ -232,7 +237,7 @@ export default function Comments() {
                         </div>
 
                         {/* Sort Dropdown */}
-                        <div className="relative z-20 w-full sm:w-48">
+                        <div className="relative z-50 w-full sm:w-48">
                             <button
                                 onClick={() => {
                                     setIsSortOpen(!isSortOpen);
@@ -247,10 +252,10 @@ export default function Comments() {
                             <AnimatePresence>
                                 {isSortOpen && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        className="absolute right-0 top-full mt-2 w-full bg-[#0f121b] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-30"
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute right-0 top-full mt-2 w-full bg-[#0f121b] border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-xl"
                                     >
                                         {SORTS.map((s) => (
                                             <button
@@ -259,7 +264,10 @@ export default function Comments() {
                                                     setSortBy(s.value);
                                                     setIsSortOpen(false);
                                                 }}
-                                                className="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors text-sm text-zinc-300 hover:text-white border-b border-white/5 last:border-0"
+                                                className={cn(
+                                                    "w-full text-left px-4 py-3 hover:bg-white/5 transition-colors text-sm border-b border-white/5 last:border-0",
+                                                    sortBy === s.value ? "text-primary font-bold bg-primary/5" : "text-zinc-300 hover:text-white"
+                                                )}
                                             >
                                                 {s.label}
                                             </button>
@@ -372,34 +380,68 @@ export default function Comments() {
                                         {/* Review Info */}
                                         <div className="space-y-4">
                                             <h4 className="text-xs uppercase tracking-widest text-primary font-bold mt-4">Tu Opinión</h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                                                <div className="relative">
                                                     <label className={labelClasses}>Categoría</label>
-                                                    <div className="relative">
-                                                        <select
-                                                            name="category"
-                                                            value={formData.category}
-                                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                                            className={`${inputClasses} appearance-none cursor-pointer`}
-                                                        >
-                                                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                                        </select>
-                                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" size={16} />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className={labelClasses}>Puntuación</label>
-                                                    <div className="flex gap-2 bg-white/5 border border-white/5 rounded-xl px-2 py-2.5">
-                                                        {[1, 2, 3, 4, 5].map((star) => (
-                                                            <button
-                                                                key={star}
-                                                                type="button"
-                                                                onClick={() => setFormData({ ...formData, rating: star })}
-                                                                className="flex-1 flex justify-center hover:scale-110 transition-transform"
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                                                        className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-left focus:outline-none focus:border-primary/50 transition-colors flex justify-between items-center text-zinc-200 h-[50px]"
+                                                    >
+                                                        {formData.category}
+                                                        <ChevronDown size={16} className={`transition-transform duration-200 ${isCategoryOpen ? "rotate-180" : ""}`} />
+                                                    </button>
+
+                                                    <AnimatePresence>
+                                                        {isCategoryOpen && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                className="absolute z-50 bottom-full mb-2 left-0 right-0 bg-[#0f121b] border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl"
                                                             >
-                                                                <Star size={24} className={star <= formData.rating ? "fill-yellow-400 text-yellow-400" : "text-zinc-700"} />
-                                                            </button>
-                                                        ))}
+                                                                {CATEGORIES.map((cat) => (
+                                                                    <button
+                                                                        key={cat}
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setFormData({ ...formData, category: cat });
+                                                                            setIsCategoryOpen(false);
+                                                                        }}
+                                                                        className={cn(
+                                                                            "w-full text-left px-4 py-3 hover:bg-white/5 transition-colors text-sm border-b border-white/5 last:border-0",
+                                                                            formData.category === cat ? "text-primary font-bold bg-primary/5" : "text-zinc-300 hover:text-white"
+                                                                        )}
+                                                                    >
+                                                                        {cat}
+                                                                    </button>
+                                                                ))}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+
+                                                <div>
+                                                    <div className="flex items-center gap-3 mb-2 h-5">
+                                                        <label className="text-sm font-medium text-zinc-400">Puntuación</label>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-yellow-500 font-bold text-sm">{formData.rating}</span>
+                                                            <div className="scale-90 origin-left flex items-center">
+                                                                <StarRating rating={formData.rating} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-white/5 border border-white/5 rounded-xl px-4 py-3 flex items-center h-[50px]">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="5"
+                                                            step="0.25"
+                                                            value={formData.rating}
+                                                            onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) })}
+                                                            className="w-full accent-primary h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -419,20 +461,7 @@ export default function Comments() {
                                 </div>
 
                                 <div className="p-6 border-t border-white/5 bg-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                                    <label className="flex items-center gap-3 cursor-pointer group select-none">
-                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.isPublic ? "bg-primary border-primary" : "border-zinc-600 bg-transparent"}`}>
-                                            {formData.isPublic && <CheckCircle2 size={12} className="text-white" />}
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isPublic}
-                                            onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
-                                            className="hidden"
-                                        />
-                                        <span className="text-sm text-zinc-400 group-hover:text-zinc-200 transition-colors">
-                                            Hacer comentario público
-                                        </span>
-                                    </label>
+
 
                                     <button
                                         onClick={handleSubmit}
@@ -452,12 +481,31 @@ export default function Comments() {
     );
 }
 
+// Helper component for star ratings with decimal support
+function StarRating({ rating }: { rating: number }) {
+    return (
+        <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => {
+                const fill = Math.min(Math.max(rating - (star - 1), 0), 1) * 100;
+
+                return (
+                    <div key={star} className="relative">
+                        <Star size={16} className="text-zinc-700" />
+                        <div
+                            className="absolute top-0 left-0 overflow-hidden"
+                            style={{ width: `${fill}%` }}
+                        >
+                            <Star size={16} className="text-yellow-500 fill-yellow-500" />
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 function CommentItem({ comment, index, handleLike, formatName }: { comment: Comment, index: number, handleLike: (id: string) => void, formatName: any }) {
     const [isExpanded, setIsExpanded] = useState(false);
-    // Rough estimate: if > 120 chars, likely > 3 lines given the card width.
-    // Or we can just use CSS line-clamp and a "Show More" that depends on state.
-    // However, reliable "show more" visibility usually requires ref measurement.
-    // For simplicity/speed: assume "long" if text length > 140 chars.
     const isLong = comment.message.length > 140;
 
     return (
@@ -485,9 +533,11 @@ function CommentItem({ comment, index, handleLike, formatName }: { comment: Comm
                         <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">{comment.category}</span>
                     </div>
                 </div>
-                <div className="flex gap-0.5 bg-black/20 px-2 py-1 rounded-full">
-                    <Star size={12} className="text-yellow-500 fill-yellow-500" />
-                    <span className="text-xs font-bold text-yellow-500">{comment.rating}.0</span>
+                <div className="flex flex-col items-end gap-1">
+                    <StarRating rating={comment.rating} />
+                    <span className="text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-1.5 py-0.5 rounded ml-2">
+                        {comment.rating.toFixed(2)}
+                    </span>
                 </div>
             </div>
 
