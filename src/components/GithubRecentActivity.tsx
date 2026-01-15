@@ -48,6 +48,23 @@ export default function GithubRecentActivity() {
 
     const fetchGithub = async (pageNum: number, size: number) => {
         const username = process.env.NEXT_PUBLIC_GITHUB_USERNAME || "AdevTC";
+        const CACHE_KEY = `github_activity_events_page_${pageNum}_size_${size}`;
+        const CACHE_DURATION = 5 * 60 * 1000;
+
+        // 1. Check Cache
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            const { data, timestamp } = JSON.parse(cached);
+            if (Date.now() - timestamp < CACHE_DURATION) {
+                setGithubEvents(data);
+                // Check pagination logic based on cached data size
+                if (data.length < size) setHasMore(false);
+                else setHasMore(true);
+                setLoading(false);
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
@@ -66,10 +83,24 @@ export default function GithubRecentActivity() {
 
             setGithubEvents(data);
             setError(null);
+
+            // 2. Save to Cache
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                data,
+                timestamp: Date.now()
+            }));
+
         } catch (e: any) {
             console.error("GitHub Fetch Error:", e);
-            setGithubEvents([]);
-            setError(e.message === "Rate limit exceeded" ? "Límite de API excedido" : "Error al cargar actividad");
+            // Fallback to cache if available even if expired, or clear
+            if (cached) {
+                const { data } = JSON.parse(cached);
+                setGithubEvents(data);
+                setError(null); // Soft fail by showing old data
+            } else {
+                setGithubEvents([]);
+                setError(e.message === "Rate limit exceeded" ? "Límite de API excedido" : "Error al cargar actividad");
+            }
         } finally {
             setLoading(false);
         }
@@ -112,17 +143,37 @@ export default function GithubRecentActivity() {
     }, [githubEvents]);
 
     const fetchCommitDetails = async (repoUrl: string, sha: string) => {
+        const CACHE_KEY = `github_commit_${sha}`;
+
+        // Check local storage first
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            const { data, timestamp } = JSON.parse(cached);
+            // Commits are immutable, so we could theoretically cache forever, but let's stick to 5 mins or 24h to be safe against glitches
+            if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+                setCommitDetails(prev => ({ ...prev, [sha]: data }));
+                return;
+            }
+        }
+
         try {
             const res = await fetch(`${repoUrl}/commits/${sha}`);
             if (res.ok) {
                 const data = await res.json();
+                const details = {
+                    message: data.commit.message,
+                    stats: data.stats,
+                    files: data.files
+                };
+
                 setCommitDetails(prev => ({
                     ...prev,
-                    [sha]: {
-                        message: data.commit.message,
-                        stats: data.stats,
-                        files: data.files
-                    }
+                    [sha]: details
+                }));
+
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    data: details,
+                    timestamp: Date.now()
                 }));
             }
         } catch (e) {

@@ -58,27 +58,50 @@ export default function Footer() {
     const [stars, setStars] = useState(0);
 
     useEffect(() => {
-        // Fetch total contributions
-        fetch("https://github-contributions-api.jogruber.de/v4/AdevTC?y=all")
-            .then(res => res.json())
-            .then(data => {
-                if (data?.total) {
-                    const total = Object.values(data.total).reduce((a: any, b: any) => a + b, 0) as number;
-                    setContributions(total);
-                }
-            })
-            .catch(err => console.error(err));
+        const CACHE_KEY = "github_footer_stats";
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes
 
-        // Fetch stars
-        fetch("https://api.github.com/users/AdevTC/repos?per_page=100")
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    const totalStars = data.reduce((acc: number, repo: any) => acc + (repo.stargazers_count || 0), 0);
-                    setStars(totalStars);
-                }
-            })
-            .catch(err => console.error("Error fetching stars:", err));
+        const cached = localStorage.getItem(CACHE_KEY);
+        const now = Date.now();
+
+        if (cached) {
+            const { stars, contributions, timestamp } = JSON.parse(cached);
+            if (now - timestamp < CACHE_DURATION) {
+                // Use Cache
+                setStars(stars);
+                setContributions(contributions);
+                return;
+            }
+        }
+
+        // Fetch fresh data if no cache or expired
+        Promise.all([
+            fetch("https://github-contributions-api.jogruber.de/v4/AdevTC?y=all").then(res => res.json()),
+            fetch("https://api.github.com/users/AdevTC/repos?per_page=100").then(res => res.json())
+        ]).then(([contributionsData, reposData]) => {
+            let newContributions = 0;
+            let newStars = 0;
+
+            if (contributionsData?.total) {
+                newContributions = Object.values(contributionsData.total).reduce((a: any, b: any) => a + b, 0) as number;
+            }
+
+            if (Array.isArray(reposData)) {
+                newStars = reposData.reduce((acc: number, repo: any) => acc + (repo.stargazers_count || 0), 0);
+            }
+
+            setContributions(newContributions);
+            setStars(newStars);
+
+            // Save to Cache
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                stars: newStars,
+                contributions: newContributions,
+                timestamp: now
+            }));
+
+        }).catch(err => console.error("Error fetching GitHub stats:", err));
+
     }, []);
 
     return (

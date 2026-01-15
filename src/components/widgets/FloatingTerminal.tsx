@@ -37,7 +37,8 @@ export default function FloatingTerminal() {
             "  contact   - Transmission channels",
             "  whoami    - Identity check",
             "  matrix    - Toggle visual overlay",
-            "  sudo      - Admin privileges"
+            "  sudo      - Admin privileges",
+            "  countdown - Check GitHub API cooldown status"
         ],
         about: [
             "USER: Adrián Tomás Cerdá",
@@ -86,7 +87,37 @@ export default function FloatingTerminal() {
         ls: "access_denied: File system mapped to visual interface.",
         cd: "Movement restricted. Use the GUI navigator.",
         date: new Date().toString(),
-        exit: "Closing session... (Just kidding, click the X button)"
+        exit: "Closing session... (Just kidding, click the X button)",
+        countdown: () => {
+            const getCooldown = (key: string, label: string) => {
+                const cached = localStorage.getItem(key);
+                if (!cached) return `  [${label}] No cache found (Ready to fetch)`;
+
+                try {
+                    const { timestamp } = JSON.parse(cached);
+                    const elapsed = Date.now() - timestamp;
+                    const remaining = 300000 - elapsed; // 5 mins in ms
+
+                    if (remaining <= 0) return `  [${label}] READY (Cooldown expired)`;
+
+                    const mins = Math.floor(remaining / 60000);
+                    const secs = Math.floor((remaining % 60000) / 1000);
+                    return `  [${label}] WAIT: ${mins}m ${secs}s`;
+                } catch (e) {
+                    return `  [${label}] Error reading cache`;
+                }
+            };
+
+            return [
+                "--- GITHUB API COOLDOWN STATUS ---",
+                getCooldown("github_footer_stats", "Live Stats (Footer)"),
+                getCooldown("github_activity_modal_events", "Activity Modal"),
+                // Check generic page 1 for feed
+                getCooldown("github_activity_events_page_1_size_5", "Activity Feed (Page 1)"),
+                "",
+                "System enforces a 5-minute cooldown to prevent API rate limiting."
+            ];
+        }
     };
 
     const evaluateCalc = (expression: string): string => {

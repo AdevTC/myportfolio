@@ -54,6 +54,19 @@ export default function GithubActivityModal() {
         if (!isOpen) return;
 
         const fetchGithub = async () => {
+            // 1. Check Cache
+            const CACHE_KEY = "github_activity_modal_events";
+            const CACHE_DURATION = 5 * 60 * 1000;
+            const cached = localStorage.getItem(CACHE_KEY);
+
+            if (cached) {
+                const { data, timestamp } = JSON.parse(cached);
+                if (Date.now() - timestamp < CACHE_DURATION) {
+                    setGithubEvents(data);
+                    return;
+                }
+            }
+
             setLoading(true);
             const username = process.env.NEXT_PUBLIC_GITHUB_USERNAME || "AdevTC";
             try {
@@ -65,10 +78,24 @@ export default function GithubActivityModal() {
                 const data = await res.json();
                 setGithubEvents(data);
                 setError(null);
+
+                // 2. Save Cache
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    data,
+                    timestamp: Date.now()
+                }));
+
             } catch (e: any) {
                 console.error("GitHub Fetch Error:", e);
-                setGithubEvents([]);
-                setError(e.message === "Rate limit exceeded" ? "Límite de API excedido" : "Error al cargar actividad");
+                // Fallback to cache without checking expiry
+                if (cached) {
+                    const { data } = JSON.parse(cached);
+                    setGithubEvents(data);
+                    setError(null);
+                } else {
+                    setGithubEvents([]);
+                    setError(e.message === "Rate limit exceeded" ? "Límite de API excedido" : "Error al cargar actividad");
+                }
             } finally {
                 setLoading(false);
             }

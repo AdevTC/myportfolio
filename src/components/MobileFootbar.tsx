@@ -5,6 +5,7 @@ import { MessageCircle, TerminalSquare, Gamepad2, Github, Activity, Download, He
 import { cn } from "@/lib/utils";
 import LikeButton from "./LikeButton";
 import ShareButton from "./ShareButton";
+import DownloadCV from "./DownloadCV";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { usePortfolioStats } from "@/hooks/usePortfolioStats";
@@ -56,10 +57,10 @@ export default function MobileFootbar() {
                         </ShareButton>
 
                         {/* 2. CV */}
-                        <a href="/cv.pdf" download="CV_Adrian_Tomas_Cerda.pdf" className={menuItemClass}>
+                        <DownloadCV className={menuItemClass} variant="custom">
                             <Download size={24} className="text-zinc-400 group-hover:text-white" />
                             <span className="text-xs font-medium text-zinc-300">CV</span>
-                        </a>
+                        </DownloadCV>
 
                         {/* 3. Widgets */}
                         {[

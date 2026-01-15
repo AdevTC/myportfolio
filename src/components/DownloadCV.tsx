@@ -5,11 +5,26 @@ import { cn } from "@/lib/utils";
 
 interface DownloadCVProps {
     className?: string;
-    variant?: "default" | "icon" | "outline" | "ghost";
+    variant?: "default" | "icon" | "outline" | "ghost" | "custom";
     label?: string;
+    children?: React.ReactNode;
 }
 
-export default function DownloadCV({ className, variant = "default", label = "Descargar CV" }: DownloadCVProps) {
+export default function DownloadCV({ className, variant = "default", label = "Descargar CV", children }: DownloadCVProps) {
+    if (variant === "custom") {
+        return (
+            <a
+                href="/cv.pdf"
+                download="CV_Adrian_Tomas_Cerda.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={className}
+                aria-label={label}
+            >
+                {children}
+            </a>
+        );
+    }
     if (variant === "icon") {
         return (
             <a

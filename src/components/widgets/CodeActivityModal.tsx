@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Activity } from "lucide-react";
 import { useFloatingComponents } from "@/context/FloatingComponentContext";
-import GithubHeatmap from "./GithubHeatmap";
+import GithubHeatmap from "../GithubHeatmap";
 import { cn } from "@/lib/utils";
 
 const YEARS = [

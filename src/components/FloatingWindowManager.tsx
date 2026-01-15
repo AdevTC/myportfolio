@@ -7,10 +7,9 @@ import FloatingWeather from "./widgets/FloatingWeather";
 import GithubActivityModal from "./widgets/GithubActivityModal";
 import AIChatAssistant from "./widgets/AIChatAssistant";
 import FloatingTerminal from "./widgets/FloatingTerminal";
-
+import CodeActivityModal from "./widgets/CodeActivityModal";
 import SkillGalaxy from "./widgets/SkillGalaxy";
 import KonamiCodeGame from "./widgets/KonamiCodeGame";
-
 
 // Placeholders for now - we will implement real widgets next
 const WidgetPlaceholder = ({ id }: { id: string }) => (
@@ -29,6 +28,7 @@ export default function FloatingWindowManager() {
                 if (id === "github") return <GithubActivityModal key={id} />;
                 if (id === "ai") return <AIChatAssistant key={id} />;
                 if (id === "terminal") return <FloatingTerminal key={id} />;
+                if (id === "codeActivity") return <CodeActivityModal key={id} />;
 
                 if (id === "skills") return <SkillGalaxy key={id} />;
                 if (id === "game") return <KonamiCodeGame key={id} />;

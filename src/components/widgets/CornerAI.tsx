@@ -14,7 +14,7 @@ interface Message {
 export default function CornerAI() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
-        { role: "model", parts: [{ text: "¡Hola! Soy la IA de Adrián. ¿En qué puedo ayudarte hoy?" }] }
+        { role: "model", parts: [{ text: "¡Hola! Soy la IA de Adrián. Estaré disponible para ayudarte en lo que necesites muy pronto, aún estoy programándome." }] }
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
