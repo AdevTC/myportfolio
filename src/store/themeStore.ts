@@ -13,7 +13,7 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
     persist(
         (set) => ({
-            primaryColor: 'gold', // Default to gold as requested
+            primaryColor: 'premium_gold', // Default to premium_gold as requested
             isSequencing: false,
             setPrimaryColor: (color) => set({ primaryColor: color }),
             toggleSequencing: () => set((state) => ({ isSequencing: !state.isSequencing })),
