@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 import { FloatingComponentProvider } from "@/context/FloatingComponentContext";
 import CornerAI from "@/components/widgets/CornerAI";
+import Preloader from "@/components/ui/Preloader";
 import FloatingWindowManager from "@/components/FloatingWindowManager";
 import MobileFootbar from "@/components/MobileFootbar";
 import DesktopSidebar from "@/components/DesktopSidebar";
@@ -51,6 +52,7 @@ export default function RootLayout({
 
             {/* Corner Floating Widgets */}
             <CornerAI />
+            <Preloader />
 
             <DesktopSidebar />
 

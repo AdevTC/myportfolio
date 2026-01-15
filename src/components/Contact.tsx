@@ -1,13 +1,15 @@
 "use client";
 
+import MeetingModal from "@/components/ui/MeetingModal";
 import { useState } from "react";
-import { Mail, MapPin, Send, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, MapPin, Send, CheckCircle, AlertCircle, Calendar, ArrowRight } from "lucide-react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { sendEmail } from "@/app/actions";
 
 export default function Contact() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [isMeetingOpen, setIsMeetingOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -70,6 +72,30 @@ export default function Contact() {
             </div>
 
             <div className="space-y-6 mb-8">
+                {/* Calendar / Meeting Button */}
+                {/* Calendar / Meeting Button - Enhanced CTA */}
+                <button
+                    onClick={() => setIsMeetingOpen(true)}
+                    className="w-full relative group overflow-hidden rounded-xl p-[1px] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-primary opacity-70 group-hover:opacity-100 animate-gradient-xy transition-opacity" />
+                    <div className="relative bg-[#0f121b] hover:bg-[#0f121b]/90 h-full rounded-xl p-4 flex items-center gap-4 transition-colors">
+                        <div className="p-3 bg-primary/20 rounded-full group-hover:bg-primary/30 transition-colors shrink-0">
+                            <Calendar className="text-primary w-6 h-6" />
+                        </div>
+                        <div className="flex-1 text-left">
+                            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-0.5">Prioridad</p>
+                            <p className="font-bold text-white text-lg">Agendar Reunión (30 min)</p>
+                            <p className="text-sm text-zinc-400 group-hover:text-zinc-300">Habla directamente conmigo</p>
+                        </div>
+                        <div className="bg-primary/10 p-2 rounded-full group-hover:bg-primary group-hover:text-white transition-all">
+                            <ArrowRight className="w-5 h-5 text-primary group-hover:text-white" />
+                        </div>
+                    </div>
+                </button>
+
+                <div className="w-full h-px bg-white/5" />
+
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-white/5 rounded-lg"><Mail className="text-primary" /></div>
                     <div>
@@ -117,7 +143,7 @@ export default function Contact() {
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-primary focus:outline-none transition-colors"
                 />
                 <textarea
-                    rows={8} // Increased rows
+                    rows={8}
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
@@ -130,8 +156,8 @@ export default function Contact() {
                     type="submit"
                     disabled={status === 'loading' || status === 'success'}
                     className={`w-full py-4 font-bold rounded-lg transition-all flex items-center justify-center gap-2 mt-auto ${status === 'success' ? 'bg-green-500 text-white' :
-                            status === 'error' ? 'bg-red-500 text-white' :
-                                'bg-primary text-white hover:brightness-110'
+                        status === 'error' ? 'bg-red-500 text-white' :
+                            'bg-primary text-white hover:brightness-110'
                         }`}
                 >
                     {status === 'loading' ? (
@@ -145,6 +171,8 @@ export default function Contact() {
                     )}
                 </button>
             </form>
+
+            <MeetingModal isOpen={isMeetingOpen} onClose={() => setIsMeetingOpen(false)} />
         </div>
     );
 }

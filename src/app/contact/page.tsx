@@ -1,7 +1,7 @@
 "use client";
 
 import ContactForm from "@/components/Contact";
-import BookingSection from "@/components/BookingSection";
+
 import Section from "@/components/ui/Section";
 
 export default function ContactPage() {
@@ -21,18 +21,9 @@ export default function ContactPage() {
                 </p>
             </div>
 
-            <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
-                {/* Widen container slightly for side-by-side comfort */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    {/* Left: Contact Form */}
-                    <div className="w-full">
-                        <ContactForm />
-                    </div>
-
-                    {/* Right: Booking */}
-                    <div className="w-full">
-                        <BookingSection />
-                    </div>
+            <div className="max-w-4xl mx-auto px-4 lg:px-6">
+                <div className="w-full">
+                    <ContactForm />
                 </div>
             </div>
         </div>
