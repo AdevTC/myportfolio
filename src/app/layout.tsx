@@ -16,6 +16,7 @@ import Preloader from "@/components/ui/Preloader";
 import FloatingWindowManager from "@/components/FloatingWindowManager";
 import MobileFootbar from "@/components/MobileFootbar";
 import DesktopSidebar from "@/components/DesktopSidebar";
+import ScrollProgress from "@/components/ui/ScrollProgress";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body className={cn(outfit.className, "overflow-x-hidden")}>
         <ThemeProvider>
           <FloatingComponentProvider>
+            <ScrollProgress />
             <ViewCounter />
             <CommandPalette />
             <Navbar />
