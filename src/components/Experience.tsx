@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronDown, ChevronUp, Clock, TrendingUp, Calendar, Users, Briefcase, MapPin, ExternalLink } from "lucide-react";
 import { createPortal } from "react-dom";
 import Counter from "./ui/Counter";
@@ -200,6 +200,26 @@ export default function Experience() {
     const [highlightedId, setHighlightedId] = useState<string | null>(null);
     const [salaryMetric, setSalaryMetric] = useState<'total' | 'previous'>('total');
 
+    const companiesDropdownRef = useRef<HTMLDivElement>(null);
+    const timeDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Handle outside clicks to close dropdowns
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (companiesDropdownRef.current && !companiesDropdownRef.current.contains(event.target as Node)) {
+                setCompaniesDropdownOpen(false);
+            }
+            if (timeDropdownRef.current && !timeDropdownRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const handleCompanyClick = (expId: string) => {
         setCompaniesDropdownOpen(false);
         // Ensure we are in timeline view to see the list
@@ -259,7 +279,7 @@ export default function Experience() {
                     {/* Global Summary Stats */}
                     <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16 text-muted-foreground animate-fade-in mb-8">
                         <div className="flex gap-12 items-center">
-                            <div className="relative text-center group">
+                            <div className="relative text-center group" ref={companiesDropdownRef}>
                                 <div
                                     className="cursor-pointer"
                                     onClick={() => setCompaniesDropdownOpen(!isCompaniesDropdownOpen)}
@@ -341,7 +361,7 @@ export default function Experience() {
                             </div>
 
                             {/* Custom Aesthetic Dropdown */}
-                            <div className="relative text-center group">
+                            <div className="relative text-center group" ref={timeDropdownRef}>
                                 <div
                                     className="cursor-pointer"
                                     onClick={() => setDropdownOpen(!isDropdownOpen)}
