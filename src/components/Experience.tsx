@@ -199,6 +199,7 @@ export default function Experience() {
     const [isCompaniesDropdownOpen, setCompaniesDropdownOpen] = useState(false);
     const [highlightedId, setHighlightedId] = useState<string | null>(null);
     const [salaryMetric, setSalaryMetric] = useState<'total' | 'previous'>('total');
+    const [hoveredDistIndex, setHoveredDistIndex] = useState<number | null>(null);
 
     const companiesDropdownRef = useRef<HTMLDivElement>(null);
     const timeDropdownRef = useRef<HTMLDivElement>(null);
@@ -810,117 +811,254 @@ export default function Experience() {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-8 max-w-4xl mx-auto"
                     >
-                        {/* Salary Growth Chart */}
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-                            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <TrendingUp className="text-green-400" size={20} />
-                                    Crecimiento Salarial ({salaryMetric === 'total' ? 'Acumulado' : 'Vs. Anterior'})
+                        {/* Charts Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Salary Growth Chart */}
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:col-span-2">
+                                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <TrendingUp className="text-green-400" size={20} />
+                                        Crecimiento Salarial ({salaryMetric === 'total' ? 'Acumulado' : 'Vs. Anterior'})
+                                    </h3>
+
+                                    {/* Toggle */}
+                                    <div className="bg-black/40 p-1 rounded-lg flex text-xs font-medium">
+                                        <button
+                                            onClick={() => setSalaryMetric('total')}
+                                            className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'total' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+                                        >
+                                            Acumulado
+                                        </button>
+                                        <button
+                                            onClick={() => setSalaryMetric('previous')}
+                                            className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'previous' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+                                        >
+                                            Vs. Anterior
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {[...EXPERIENCES].reverse().map((exp, i) => {
+                                        const value = salaryMetric === 'total' ? exp.growthTotal : exp.growthVsPrevious;
+                                        const displayValue = value || 0;
+                                        const barWidth = Math.min(Math.abs(displayValue), 100);
+
+                                        return (
+                                            <div key={exp.id} className="space-y-2">
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-white font-medium">{exp.company}</span>
+                                                    <span className={`font-mono ${displayValue >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {displayValue > 0 ? '+' : ''}{displayValue.toFixed(2)}%
+                                                    </span>
+                                                </div>
+                                                <div className="h-4 bg-white/10 rounded-full overflow-hidden relative">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${barWidth}%` }}
+                                                        transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
+                                                        className={`absolute top-0 left-0 h-full rounded-full ${displayValue >= 0 ? 'bg-gradient-to-r from-green-500 to-emerald-300' : 'bg-gradient-to-r from-red-500 to-orange-400'}`}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                <p className="mt-6 text-xs text-muted-foreground text-center">
+                                    {salaryMetric === 'total'
+                                        ? '*Crecimiento porcentual respecto al salario inicial base.'
+                                        : '*Crecimiento porcentual respecto a la posición inmediatemente anterior.'}
+                                </p>
+                            </div>
+
+                            {/* Time Distribution (Enhanced) */}
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:col-span-2">
+                                <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
+                                    <Clock className="text-purple-400" size={20} />
+                                    Distribución de Tiempo
                                 </h3>
 
-                                {/* Toggle */}
-                                <div className="bg-black/40 p-1 rounded-lg flex text-xs font-medium">
-                                    <button
-                                        onClick={() => setSalaryMetric('total')}
-                                        className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'total' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
-                                    >
-                                        Acumulado
-                                    </button>
-                                    <button
-                                        onClick={() => setSalaryMetric('previous')}
-                                        className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'previous' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
-                                    >
-                                        Vs. Anterior
-                                    </button>
+                                <div className="relative mb-8 group/chart">
+                                    {/* The Bar */}
+                                    <div className="flex h-16 rounded-2xl overflow-hidden w-full ring-4 ring-black/40 shadow-2xl relative z-10">
+                                        {[...EXPERIENCES].reverse().map((exp, i) => {
+                                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                            const percent = (ms / totalMs) * 100;
+
+                                            // Premium Gradients
+                                            const gradientClass =
+                                                exp.id === 'sapas' ? 'bg-gradient-to-b from-primary to-orange-600' :
+                                                    exp.id === 'timestamp' ? 'bg-gradient-to-b from-blue-500 to-indigo-700' :
+                                                        'bg-gradient-to-b from-emerald-400 to-teal-700';
+
+                                            return (
+                                                <motion.div
+                                                    key={exp.id}
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${percent}%` }}
+                                                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                                                    className={`h-full relative transition-all duration-300 hover:brightness-110 cursor-crosshair ${gradientClass}`}
+                                                    onMouseEnter={() => setHoveredDistIndex(i)}
+                                                    onMouseLeave={() => setHoveredDistIndex(null)}
+                                                >
+                                                    {/* Shine Effect */}
+                                                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50" />
+                                                </motion.div>
+                                            )
+                                        })}
+                                    </div>
+
+                                    {/* Tooltip (Floating) */}
+                                    <AnimatePresence>
+                                        {hoveredDistIndex !== null && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 5, scale: 0.9 }}
+                                                className="absolute -top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+                                            >
+                                                <div className="bg-black/90 border border-white/20 backdrop-blur-xl p-4 rounded-xl shadow-2xl flex flex-col items-center gap-1 min-w-[200px]">
+                                                    <span className="text-white font-bold text-lg">
+                                                        {[...EXPERIENCES].reverse()[hoveredDistIndex].company}
+                                                    </span>
+                                                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                                                        <Clock size={12} />
+                                                        <span className="font-mono">
+                                                            {(() => {
+                                                                const exp = [...EXPERIENCES].reverse()[hoveredDistIndex];
+                                                                const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                                                return convertTime(ms, timeUnit).toFixed(getDecimals(timeUnit));
+                                                            })()} {timeUnit}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs font-bold bg-white/10 px-2 py-1 rounded-full text-primary mt-1">
+                                                        {(() => {
+                                                            const exp = [...EXPERIENCES].reverse()[hoveredDistIndex];
+                                                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                                            return ((ms / totalMs) * 100).toFixed(1) + '%';
+                                                        })()}
+                                                    </span>
+                                                </div>
+                                                {/* Arrow */}
+                                                <div className="w-4 h-4 bg-black/90 border-r border-b border-white/20 transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-2" />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                                {/* Legend */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {[...EXPERIENCES].reverse().map((exp) => {
+                                        const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                        const percent = (ms / totalMs) * 100;
+                                        const colorClass =
+                                            exp.id === 'sapas' ? 'bg-primary' :
+                                                exp.id === 'timestamp' ? 'bg-blue-600' :
+                                                    'bg-emerald-500';
+
+                                        return (
+                                            <div key={exp.id} className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                                                <div className={`w-3 h-12 rounded-full ${colorClass} shadow-[0_0_10px_currentColor]`} />
+                                                <div>
+                                                    <span className="block text-white font-bold text-sm">{exp.company}</span>
+                                                    <span className="text-muted-foreground text-xs">{percent.toFixed(1)}% del tiempo</span>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                {[...EXPERIENCES].reverse().map((exp, i) => {
-                                    const value = salaryMetric === 'total' ? exp.growthTotal : exp.growthVsPrevious;
-                                    // Handle missing or zero values comfortably
-                                    const displayValue = value || 0;
-                                    // For visual bar, cap at 100 or scale suitably. If it's "previous", 100% is a huge jump, but fine.
-                                    const barWidth = Math.min(Math.abs(displayValue), 100);
+                            {/* Work Mode Distribution (New) */}
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:col-span-2">
+                                <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
+                                    <MapPin className="text-pink-400" size={20} />
+                                    Distribución de Modalidad
+                                </h3>
 
-                                    return (
-                                        <div key={exp.id} className="space-y-2">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-white font-medium">{exp.company}</span>
-                                                <span className={`font-mono ${displayValue >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {displayValue > 0 ? '+' : ''}{displayValue.toFixed(2)}%
-                                                </span>
-                                            </div>
-                                            <div className="h-4 bg-white/10 rounded-full overflow-hidden relative">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${barWidth}%` }}
-                                                    transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
-                                                    className={`absolute top-0 left-0 h-full rounded-full ${displayValue >= 0 ? 'bg-gradient-to-r from-green-500 to-emerald-300' : 'bg-gradient-to-r from-red-500 to-orange-400'}`}
-                                                />
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                            <p className="mt-6 text-xs text-muted-foreground text-center">
-                                {salaryMetric === 'total'
-                                    ? '*Crecimiento porcentual respecto al salario inicial base.'
-                                    : '*Crecimiento porcentual respecto a la posición inmediatemente anterior.'}
-                            </p>
-                        </div>
+                                <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+                                    {/* Conic Gradient Chart */}
+                                    {(() => {
+                                        // Calculate Work Mode Stats
+                                        const stats = EXPERIENCES.reduce((acc, exp) => {
+                                            const mode = exp.workMode.includes('Remoto') ? 'Remoto' :
+                                                exp.workMode.includes('Híbrido') ? 'Híbrido' : 'Presencial';
+                                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                            acc[mode] = (acc[mode] || 0) + ms;
+                                            return acc;
+                                        }, {} as Record<string, number>);
 
-                        {/* Time Distribution */}
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                                <Clock className="text-purple-400" size={20} />
-                                Distribución de Tiempo
-                            </h3>
-                            <div className="flex h-12 rounded-full overflow-hidden w-full ring-4 ring-black/40 shadow-2xl">
-                                {[...EXPERIENCES].reverse().map((exp, i) => {
-                                    const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
-                                    const percent = (ms / totalMs) * 100;
+                                        const remoteMs = stats['Remoto'] || 0;
+                                        const hybridMs = stats['Híbrido'] || 0;
 
-                                    // Distinct colors per company
-                                    // Sapas: Primary (Pink/Reddish), Timestamp: Blue, Inetum: Emerald/Teal
-                                    const colorClass =
-                                        exp.id === 'sapas' ? 'bg-primary' :
-                                            exp.id === 'timestamp' ? 'bg-blue-600' :
-                                                'bg-emerald-600';
+                                        const remotePercent = (remoteMs / totalMs) * 100;
+                                        const hybridPercent = (hybridMs / totalMs) * 100;
 
-                                    return (
-                                        <motion.div
-                                            key={exp.id}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${percent}%` }}
-                                            transition={{ duration: 1, ease: "anticipate" }}
-                                            className={`h-full relative transition-all hover:brightness-110 cursor-crosshair flex items-center justify-center ${colorClass}`}
-                                            title={`${exp.company}: ${percent.toFixed(1)}%`}
-                                        >
-                                            <span className="text-white/90 font-bold text-xs truncate px-2 drop-shadow-md hidden md:block">
-                                                {exp.company} ({percent.toFixed(0)}%)
-                                            </span>
-                                        </motion.div>
-                                    )
-                                })}
-                            </div>
-                            <div className="flex flex-wrap gap-4 justify-center mt-6">
-                                {[...EXPERIENCES].reverse().map((exp) => {
-                                    const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
-                                    const percent = (ms / totalMs) * 100;
-                                    const bgClass =
-                                        exp.id === 'sapas' ? 'bg-primary' :
-                                            exp.id === 'timestamp' ? 'bg-blue-600' :
-                                                'bg-emerald-600';
+                                        return (
+                                            <>
+                                                <div className="relative w-48 h-48 rounded-full shadow-2xl flex items-center justify-center group">
+                                                    {/* CSS Conic Gradient */}
+                                                    <div
+                                                        className="absolute inset-0 rounded-full animate-spin-slow"
+                                                        style={{
+                                                            background: `conic-gradient(
+                                                                #ec4899 0% ${remotePercent}%, 
+                                                                #8b5cf6 ${remotePercent}% 100%
+                                                            )`
+                                                        }}
+                                                    />
+                                                    {/* Inner Circle for Donut Effect */}
+                                                    <div className="absolute inset-4 bg-[#0a0a0a] rounded-full z-10 flex flex-col items-center justify-center p-4 text-center">
+                                                        <span className="text-muted-foreground text-xs uppercase tracking-wider">Dominante</span>
+                                                        <span className="text-2xl font-bold text-white">
+                                                            {remotePercent > hybridPercent ? 'Remoto' : 'Híbrido'}
+                                                        </span>
+                                                        <span className="text-sm font-mono text-pink-400">
+                                                            {(Math.max(remotePercent, hybridPercent)).toFixed(0)}%
+                                                        </span>
+                                                    </div>
+                                                </div>
 
-                                    return (
-                                        <div key={exp.id} className="flex items-center gap-2 text-sm bg-white/5 px-3 py-1.5 rounded-full border border-white/5 shadow-sm">
-                                            <div className={`w-3 h-3 rounded-full ${bgClass} shadow-lg shadow-black/50`} />
-                                            <span className="text-white/90 font-medium">{exp.company}</span>
-                                            <span className="text-muted-foreground font-mono text-xs">| {percent.toFixed(1)}%</span>
-                                        </div>
-                                    )
-                                })}
+                                                {/* Legend */}
+                                                <div className="flex flex-col gap-4">
+                                                    <div className="flex items-center gap-4 group">
+                                                        <div className="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center border border-pink-500/30 group-hover:scale-110 transition-transform">
+                                                            <MapPin className="text-pink-500" size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-lg font-bold text-white">Full Remoto</div>
+                                                            <div className="text-pink-400 font-mono text-sm">{remotePercent.toFixed(1)}%</div>
+                                                            <div className="w-32 h-1.5 bg-white/10 rounded-full mt-2 overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    whileInView={{ width: `${remotePercent}%` }}
+                                                                    className="h-full bg-pink-500"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-4 group">
+                                                        <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30 group-hover:scale-110 transition-transform">
+                                                            <Briefcase className="text-violet-500" size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-lg font-bold text-white">Híbrido</div>
+                                                            <div className="text-violet-400 font-mono text-sm">{hybridPercent.toFixed(1)}%</div>
+                                                            <div className="w-32 h-1.5 bg-white/10 rounded-full mt-2 overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    whileInView={{ width: `${hybridPercent}%` }}
+                                                                    className="h-full bg-violet-500"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )
+                                    })()}
+                                </div>
                             </div>
                         </div>
                     </motion.div>
