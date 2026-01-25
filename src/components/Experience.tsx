@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Clock, TrendingUp, Calendar, Users, Briefcase, MapPin, ExternalLink } from "lucide-react";
+import { createPortal } from "react-dom";
+import Counter from "./ui/Counter";
 
 // --- Types ---
 interface ExperienceItem {
@@ -23,6 +25,18 @@ interface ExperienceItem {
     url: string; // New field
 }
 
+// --- Constants ---
+const S_INETUM_START = Number(process.env.NEXT_PUBLIC_SALARY_INETUM_START) || 19000;
+const S_INETUM_END = Number(process.env.NEXT_PUBLIC_SALARY_INETUM_END) || 20000;
+const S_TIMESTAMP = Number(process.env.NEXT_PUBLIC_SALARY_TIMESTAMP) || 26000;
+const S_SAPAS = Number(process.env.NEXT_PUBLIC_SALARY_SAPAS) || 33000;
+
+const calculateGrowth = (current: number, previous: number) => {
+    if (!previous) return 0;
+    return ((current / previous) - 1) * 100;
+};
+
+// --- Data ---
 // --- Data ---
 const EXPERIENCES: ExperienceItem[] = [
     {
@@ -30,11 +44,14 @@ const EXPERIENCES: ExperienceItem[] = [
         company: "Sapas Consulting",
         role: "SAP Cloud Integrations & BTP Developer",
         period: "Barcelona, España | Julio 2025 - Actualidad",
-        startDate: "2025-07-07",
+        startDate: "2025-07-07T09:00:00",
         description: "Diseño y desarrollo de integraciones clínicas (HL7 & SAP CPI) y arquitecturas Cloud-Native sobre SAP BTP.",
-        tech: ["SAP Cloud Integration (CPI)", "HL7", "SAP CAP", "Node.js", "Groovy", "OData", "APIs REST"],
-        growthVsPrevious: 26.92,
-        growthTotal: 73.68,
+        tech: [
+            "HL7", "SAP CAP", "CPI", "SAP BTP", "CDS", "CI/CD", "GitHub", "SAP HANA", "SAP BAS", // Sapas specific
+            "Integration Suite", "SuccessFactors", "Node.js", "Groovy", "OData", "JSON", "SOAP", "XSD", "Java", "JWT", "OAuth", "Postman", "Insomnia", "Transformación de datos", "Validación de datos", "Error Handling" // Inherited from Timestamp/Core
+        ],
+        growthVsPrevious: calculateGrowth(S_SAPAS, S_TIMESTAMP),
+        growthTotal: calculateGrowth(S_SAPAS, S_INETUM_START),
         teamSize: 8,
         logo: "/logos/sapas.png",
         workMode: "En Remoto / Teletrabajo",
@@ -55,12 +72,14 @@ const EXPERIENCES: ExperienceItem[] = [
         company: "Timestamp",
         role: "Consultor de Integración SAP",
         period: "Madrid, España | Mayo 2025 - Julio 2025",
-        startDate: "2025-05-12",
-        endDate: "2025-07-04",
+        startDate: "2025-05-12T09:00:00",
+        endDate: "2025-07-04T15:30:00",
         description: "Desarrollo avanzado de integraciones para RRHH y Finanzas con Groovy y SAP Integration Suite.",
-        tech: ["SAP CPI", "SuccessFactors EC", "Groovy", "SAP ECP", "OData", "XML/XSD"],
-        growthVsPrevious: 30.00,
-        growthTotal: 36.84,
+        tech: [
+            "Integration Suite", "SuccessFactors", "Node.js", "Groovy", "OData", "JSON", "SOAP", "SAP BTP", "Productos SAP", "XSD", "Definición de esquemas XML", "Java", "JWT", "OAuth", "Postman", "Insomnia", "Notepad++", "SoapUI", "Picklists", "CSV", "Base64", "Transformación de datos", "Validación de datos", "Error Handling", "Mapping"
+        ],
+        growthVsPrevious: calculateGrowth(S_TIMESTAMP, S_INETUM_END),
+        growthTotal: calculateGrowth(S_TIMESTAMP, S_INETUM_START),
         teamSize: 6,
         logo: "/logos/timestamp.png",
         workMode: "Híbrido",
@@ -79,12 +98,14 @@ const EXPERIENCES: ExperienceItem[] = [
         company: "Inetum",
         role: "Consultor Junior de Integración SAP",
         period: "Madrid, España | Julio 2023 - Mayo 2025",
-        startDate: "2023-09-18",
-        endDate: "2025-05-09",
+        startDate: "2023-09-18T08:00:00",
+        endDate: "2025-05-09T14:30:00",
         description: "Diseño, desarrollo y mantenimiento de soluciones de integración con SAP PI/PO y CPI.",
-        tech: ["SAP CPI", "SAP PI/PO", "Java", "Groovy", "APIs REST/SOAP", "Cloud Connector"],
+        tech: [
+            "Base64", "CSV", "Definición de esquemas XML", "Desarrollo de software", "Groovy", "HTML", "Integration Suite", "JSON", "Mapping", "Microsoft Excel", "Notepad++", "Postman", "Productos SAP", "SAP BTP", "SAP NetWeaver", "SOAP", "SoapUI", "Trabajo en equipo", "XML", "XSD"
+        ],
         growthVsPrevious: 0,
-        growthTotal: 5.26,
+        growthTotal: calculateGrowth(S_INETUM_END, S_INETUM_START),
         teamSize: 14,
         logo: "/logos/inetum.png",
         workMode: "Híbrido",
@@ -102,26 +123,114 @@ const EXPERIENCES: ExperienceItem[] = [
 ];
 
 // --- Helpers ---
-const calculateDays = (start: string, end?: string) => {
+const calculateDiffMs = (start: string, end?: string) => {
     const startDate = new Date(start);
     const endDate = end ? new Date(end) : new Date();
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.abs(endDate.getTime() - startDate.getTime());
 }
+
+type TimeUnit =
+    | 'Seg.' | 'Min.' | 'Horas' | 'Días' | 'Semanas' | 'Quincenas'
+    | 'Meses' | 'Trimestres' | 'Cuatrimestres' | 'Semestres'
+    | 'Años' | 'Bienios' | 'Trienios' | 'Cuatrienios' | 'Lustros'
+    | 'Décadas' | 'Siglos' | 'Milenios';
+
+const convertTime = (ms: number, unit: TimeUnit) => {
+    const seconds = ms / 1000;
+    const minutes = seconds / 60;
+    const hours = minutes / 60;
+    const days = hours / 24;
+    const years = days / 365.25;
+
+    switch (unit) {
+        case 'Seg.': return seconds;
+        case 'Min.': return minutes;
+        case 'Horas': return hours;
+        case 'Días': return days;
+        case 'Semanas': return days / 7;
+        case 'Quincenas': return days / 15;
+        case 'Meses': return days / 30.4375; // More precise average
+        case 'Trimestres': return days / 91.3125;
+        case 'Cuatrimestres': return days / 121.75;
+        case 'Semestres': return days / 182.625;
+        case 'Años': return years;
+        case 'Bienios': return years / 2;
+        case 'Trienios': return years / 3;
+        case 'Cuatrienios': return years / 4;
+        case 'Lustros': return years / 5;
+        case 'Décadas': return years / 10;
+        case 'Siglos': return years / 100;
+        case 'Milenios': return years / 1000;
+        default: return days;
+    }
+};
+
+const getDecimals = (unit: TimeUnit) => {
+    switch (unit) {
+        case 'Seg.':
+        case 'Min.':
+        case 'Horas':
+        case 'Días': return 0;
+        case 'Semanas':
+        case 'Quincenas':
+        case 'Meses': return 1;
+        case 'Trimestres':
+        case 'Cuatrimestres':
+        case 'Semestres':
+        case 'Años': return 2;
+        case 'Bienios':
+        case 'Trienios':
+        case 'Cuatrienios':
+        case 'Lustros': return 4;
+        case 'Décadas': return 5;
+        case 'Siglos': return 8;
+        case 'Milenios': return 10;
+        default: return 2;
+    }
+};
 
 // --- Component ---
 export default function Experience() {
-    const [viewMode, setViewMode] = useState<'timeline' | 'comparison'>('timeline');
-    const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
-    const [currentDaysSapas, setCurrentDaysSapas] = useState(0);
+    const [viewMode, setViewMode] = useState<'timeline' | 'comparison' | 'analytics'>('timeline');
+    const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+    const [currentMsSapas, setCurrentMsSapas] = useState(0);
+    const [timeUnit, setTimeUnit] = useState<TimeUnit>('Días');
+    const [isDropdownOpen, setDropdownOpen] = useState(false);
+    const [isCompaniesDropdownOpen, setCompaniesDropdownOpen] = useState(false);
+    const [highlightedId, setHighlightedId] = useState<string | null>(null);
+    const [salaryMetric, setSalaryMetric] = useState<'total' | 'previous'>('total');
+
+    const handleCompanyClick = (expId: string) => {
+        setCompaniesDropdownOpen(false);
+        // Ensure we are in timeline view to see the list
+        setViewMode('timeline');
+
+        // Small delay to allow view switch and render
+        setTimeout(() => {
+            const element = document.getElementById(`exp-${expId}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setHighlightedId(expId);
+                // Remove highlight after 3 seconds
+                setTimeout(() => setHighlightedId(null), 3000);
+            }
+        }, 100);
+    };
+
+    const TIME_UNITS: TimeUnit[] = [
+        'Seg.', 'Min.', 'Horas', 'Días', 'Semanas', 'Quincenas',
+        'Meses', 'Trimestres', 'Cuatrimestres', 'Semestres',
+        'Años', 'Bienios', 'Trienios', 'Cuatrienios', 'Lustros',
+        'Décadas', 'Siglos', 'Milenios'
+    ];
 
     // Live counter for Sapas
     useEffect(() => {
-        const updateDays = () => {
-            setCurrentDaysSapas(calculateDays(EXPERIENCES[0].startDate));
+        const updateMs = () => {
+            setCurrentMsSapas(calculateDiffMs(EXPERIENCES[0].startDate));
         };
-        updateDays();
-        const interval = setInterval(updateDays, 60000);
+        updateMs();
+        const interval = setInterval(updateMs, 1000); // Update every second for dynamic feel
         return () => clearInterval(interval);
     }, []);
 
@@ -131,9 +240,9 @@ export default function Experience() {
 
     // Global Stats
     const totalCompanies = EXPERIENCES.length;
-    const totalDays = EXPERIENCES.reduce((acc, exp) => {
-        if (exp.id === 'sapas') return acc + currentDaysSapas;
-        return acc + calculateDays(exp.startDate, exp.endDate);
+    const totalMs = EXPERIENCES.reduce((acc, exp) => {
+        if (exp.id === 'sapas') return acc + currentMsSapas;
+        return acc + calculateDiffMs(exp.startDate, exp.endDate);
     }, 0);
 
     return (
@@ -148,25 +257,188 @@ export default function Experience() {
                     <div className="h-1 w-20 bg-primary mx-auto rounded-full" />
 
                     {/* Global Summary Stats */}
-                    <div className="flex justify-center gap-8 md:gap-16 text-muted-foreground animate-fade-in">
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-white flex items-center justify-center gap-2">
-                                <Briefcase size={24} className="text-primary" />
-                                {totalCompanies}
-                            </p>
-                            <span className="text-sm uppercase tracking-wider">Empresas</span>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-white flex items-center justify-center gap-2">
-                                <Clock size={24} className="text-primary" />
-                                {totalDays}
-                            </p>
-                            <span className="text-sm uppercase tracking-wider">Días Trabajados</span>
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16 text-muted-foreground animate-fade-in mb-8">
+                        <div className="flex gap-12 items-center">
+                            <div className="relative text-center group">
+                                <div
+                                    className="cursor-pointer"
+                                    onClick={() => setCompaniesDropdownOpen(!isCompaniesDropdownOpen)}
+                                >
+                                    <p className="text-3xl font-bold text-white flex items-center justify-center gap-2">
+                                        <Briefcase size={24} className="text-primary" />
+                                        {totalCompanies}
+                                    </p>
+                                    <div className="flex items-center justify-center gap-1 group-hover:text-primary transition-colors mt-1">
+                                        <span className="text-xs uppercase tracking-wider">Empresas</span>
+                                        <ChevronDown size={12} className={`transition-transform duration-300 ${isCompaniesDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </div>
+                                </div>
+
+                                <AnimatePresence>
+                                    {isCompaniesDropdownOpen && (
+                                        <>
+                                            {/* Desktop Dropdown */}
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="hidden md:block absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl p-2 z-50 min-w-[220px] backdrop-blur-xl"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {EXPERIENCES.map((exp) => (
+                                                    <div
+                                                        key={exp.id}
+                                                        onClick={() => handleCompanyClick(exp.id)}
+                                                        className="px-4 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3 cursor-pointer"
+                                                    >
+                                                        <div className="w-8 h-8 rounded-md bg-white p-1 flex items-center justify-center shrink-0">
+                                                            <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-200">{exp.company}</span>
+                                                    </div>
+                                                ))}
+                                            </motion.div>
+
+                                            {/* Mobile Dropdown (Portal) */}
+                                            {typeof document !== 'undefined' && createPortal(
+                                                <div className="md:hidden fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                                                    <motion.div
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCompaniesDropdownOpen(false);
+                                                        }}
+                                                    />
+                                                    <motion.div
+                                                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                                        className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl p-2 z-10 max-h-[70vh] overflow-y-auto custom-scrollbar"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        {EXPERIENCES.map((exp) => (
+                                                            <div
+                                                                key={`mobile-${exp.id}`}
+                                                                onClick={() => handleCompanyClick(exp.id)}
+                                                                className="px-4 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3 border-b border-white/5 last:border-0 active:bg-white/10"
+                                                            >
+                                                                <div className="w-10 h-10 rounded-md bg-white p-1 flex items-center justify-center shrink-0">
+                                                                    <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
+                                                                </div>
+                                                                <span className="text-base font-bold text-white">{exp.company}</span>
+                                                            </div>
+                                                        ))}
+                                                    </motion.div>
+                                                </div>,
+                                                document.body
+                                            )}
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Custom Aesthetic Dropdown */}
+                            <div className="relative text-center group">
+                                <div
+                                    className="cursor-pointer"
+                                    onClick={() => setDropdownOpen(!isDropdownOpen)}
+                                >
+                                    <p className="text-3xl font-bold text-white flex items-center justify-center gap-2">
+                                        <Clock size={24} className="text-primary" />
+                                        <Counter value={convertTime(totalMs, timeUnit)} decimals={getDecimals(timeUnit)} />
+                                    </p>
+                                    <div className="flex items-center justify-center gap-1 group-hover:text-primary transition-colors mt-1">
+                                        <span className="text-xs uppercase tracking-wider">{timeUnit} {timeUnit === 'Horas' ? 'Trabajadas' : 'Trabajados'}</span>
+                                        <ChevronDown size={12} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </div>
+                                </div>
+
+                                <AnimatePresence>
+                                    {isDropdownOpen && (
+                                        <>
+                                            {/* Desktop Dropdown (Inline) */}
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="hidden md:grid absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl p-2 z-50 min-w-[450px] max-h-[50vh] overflow-y-auto custom-scrollbar backdrop-blur-xl grid-cols-3 gap-1"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {TIME_UNITS.map((unit) => (
+                                                    <button
+                                                        key={`desktop-${unit}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setTimeUnit(unit);
+                                                            setDropdownOpen(false);
+                                                        }}
+                                                        className={`px-3 py-2 rounded-lg text-sm transition-all text-left flex items-center justify-between ${timeUnit === unit
+                                                            ? "bg-primary/20 text-primary border border-primary/30"
+                                                            : "text-gray-400 hover:bg-white/5 hover:text-white"
+                                                            }`}
+                                                    >
+                                                        {unit}
+                                                        {timeUnit === unit && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+
+                                            {/* Mobile Dropdown (Portal) */}
+                                            {typeof document !== 'undefined' && createPortal(
+                                                <div className="md:hidden fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                                                    {/* Backdrop */}
+                                                    <motion.div
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDropdownOpen(false);
+                                                        }}
+                                                    />
+
+                                                    {/* Content */}
+                                                    <motion.div
+                                                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                                        className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl p-3 z-10 max-h-[70vh] overflow-y-auto custom-scrollbar grid grid-cols-2 gap-1"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        {TIME_UNITS.map((unit) => (
+                                                            <button
+                                                                key={`mobile-${unit}`}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setTimeUnit(unit);
+                                                                    setDropdownOpen(false);
+                                                                }}
+                                                                className={`px-4 py-3 rounded-xl text-xs font-medium transition-all text-left flex items-center justify-between ${timeUnit === unit
+                                                                    ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_10px_rgba(234,88,12,0.2)]"
+                                                                    : "text-gray-400 bg-white/5 hover:bg-white/10 hover:text-white"
+                                                                    }`}
+                                                            >
+                                                                {unit}
+                                                                {timeUnit === unit && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                                                            </button>
+                                                        ))}
+                                                    </motion.div>
+                                                </div>,
+                                                document.body
+                                            )}
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </div>
 
-                    {/* View Toggle */}
-                    <div className="flex justify-center mt-6">
+                    {/* View Toggle (Pill Style Reverted) */}
+                    <div className="flex justify-center">
                         <div className="bg-white/5 border border-white/10 p-1 rounded-full flex items-center">
                             <button
                                 onClick={() => setViewMode('timeline')}
@@ -186,6 +458,15 @@ export default function Experience() {
                             >
                                 Comparación
                             </button>
+                            <button
+                                onClick={() => setViewMode('analytics')}
+                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'analytics'
+                                    ? 'bg-primary text-white shadow-lg'
+                                    : 'text-muted-foreground hover:text-white'
+                                    }`}
+                            >
+                                Analítica
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -194,15 +475,23 @@ export default function Experience() {
                 {viewMode === 'timeline' && (
                     <div className="relative border-l-2 border-white/10 ml-4 md:ml-12 space-y-12 max-w-5xl mx-auto">
                         {EXPERIENCES.map((exp, index) => {
-                            const days = exp.id === 'sapas' ? currentDaysSapas : calculateDays(exp.startDate, exp.endDate);
+                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
 
                             return (
-                                <div key={index} className="relative pl-8 md:pl-12">
+                                <div
+                                    key={index}
+                                    id={`exp-${exp.id}`}
+                                    className="relative pl-8 md:pl-12 transition-all duration-500"
+                                >
                                     {/* Dot indicator */}
                                     <div className="absolute -left-[9px] top-4 md:top-8 w-4 h-4 rounded-full bg-primary shadow-lg shadow-primary/50 ring-4 ring-black" />
 
                                     <div
-                                        className={`bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-primary/50 ${expandedIndex === index ? 'ring-1 ring-primary/30 bg-white/10' : ''}`}
+                                        className={`bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-primary/50 ${expandedIndex === index ? 'ring-1 ring-primary/30 bg-white/10' : ''
+                                            } ${highlightedId === exp.id
+                                                ? 'ring-2 ring-primary shadow-[0_0_30px_rgba(234,88,12,0.3)] scale-[1.02] bg-white/10'
+                                                : ''
+                                            }`}
                                     >
                                         {/* Header (Always Visible) */}
                                         <div
@@ -255,27 +544,37 @@ export default function Experience() {
                                             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 py-4 border-y border-white/5">
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] md:text-xs text-muted-foreground uppercase">Tiempo</span>
-                                                    <span className="font-bold text-white text-sm md:text-base">{days} días</span>
+                                                    <span className="font-bold text-white text-sm md:text-base">
+                                                        <Counter
+                                                            value={convertTime(ms, timeUnit)}
+                                                            suffix={` ${timeUnit}`}
+                                                            decimals={getDecimals(timeUnit)}
+                                                        />
+                                                    </span>
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] md:text-xs text-muted-foreground uppercase">Equipo</span>
-                                                    <span className="font-bold text-white text-sm md:text-base">{exp.teamSize} personas</span>
+                                                    <span className="font-bold text-white text-sm md:text-base">
+                                                        <Counter value={exp.teamSize} suffix=" personas" />
+                                                    </span>
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] md:text-xs text-muted-foreground uppercase">Crecimiento (Ant.)</span>
                                                     <span className={`font-bold text-sm md:text-base ${exp.growthVsPrevious && exp.growthVsPrevious > 0 ? 'text-green-400' : 'text-white'}`}>
-                                                        {exp.growthVsPrevious ? `+${exp.growthVsPrevious}%` : '-'}
+                                                        {exp.growthVsPrevious ? <Counter value={exp.growthVsPrevious} prefix="+" suffix="%" decimals={2} /> : '-'}
                                                     </span>
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] md:text-xs text-muted-foreground uppercase">Crecimiento (Inicio)</span>
                                                     <span className={`font-bold text-sm md:text-base ${exp.growthTotal && exp.growthTotal > 0 ? 'text-green-400' : 'text-white'}`}>
-                                                        {exp.growthTotal ? `+${exp.growthTotal}%` : '-'}
+                                                        {exp.growthTotal ? <Counter value={exp.growthTotal} prefix="+" suffix="%" decimals={2} /> : '-'}
                                                     </span>
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] md:text-xs text-muted-foreground uppercase">Tecnologías</span>
-                                                    <span className="font-bold text-white text-sm md:text-base">{exp.tech.length}</span>
+                                                    <span className="font-bold text-white text-sm md:text-base">
+                                                        <Counter value={exp.tech.length} />
+                                                    </span>
                                                 </div>
                                             </div>
 
@@ -302,7 +601,7 @@ export default function Experience() {
                                                     initial={{ height: 0, opacity: 0 }}
                                                     animate={{ height: "auto", opacity: 1 }}
                                                     exit={{ height: 0, opacity: 0 }}
-                                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                    transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
                                                     className="overflow-hidden bg-black/20"
                                                 >
                                                     <div className="p-6 md:p-8 pt-0 border-t border-white/10">
@@ -315,31 +614,69 @@ export default function Experience() {
                                                                     <span className="w-1 h-6 bg-primary rounded-full" />
                                                                     Detalles y Logros
                                                                 </h4>
-                                                                <ul className="space-y-4">
+                                                                <motion.ul
+                                                                    className="space-y-4"
+                                                                    initial="hidden"
+                                                                    animate="visible"
+                                                                    variants={{
+                                                                        hidden: { opacity: 0 },
+                                                                        visible: {
+                                                                            opacity: 1,
+                                                                            transition: {
+                                                                                staggerChildren: 0.1
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                >
                                                                     {exp.achievements.map((achievement, i) => (
-                                                                        <li key={i} className="flex gap-3 text-muted-foreground">
+                                                                        <motion.li
+                                                                            key={i}
+                                                                            variants={{
+                                                                                hidden: { opacity: 0, x: -10 },
+                                                                                visible: { opacity: 1, x: 0 }
+                                                                            }}
+                                                                            className="flex gap-3 text-muted-foreground"
+                                                                        >
                                                                             <div className="min-w-[6px] h-[6px] rounded-full bg-primary mt-2.5" />
                                                                             <span>
                                                                                 <strong className="text-white block mb-1">{achievement.title}</strong>
                                                                                 {achievement.desc}
                                                                             </span>
-                                                                        </li>
+                                                                        </motion.li>
                                                                     ))}
-                                                                </ul>
+                                                                </motion.ul>
                                                             </div>
 
                                                             <div>
                                                                 <h4 className="text-lg font-bold text-white mb-4">Stack Tecnológico</h4>
-                                                                <div className="flex flex-wrap gap-2">
+                                                                <motion.div
+                                                                    className="flex flex-wrap gap-2"
+                                                                    initial="hidden"
+                                                                    animate="visible"
+                                                                    variants={{
+                                                                        hidden: { opacity: 0 },
+                                                                        visible: {
+                                                                            opacity: 1,
+                                                                            transition: {
+                                                                                staggerChildren: 0.05,
+                                                                                delayChildren: 0.2
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                >
                                                                     {exp.tech.map((tech) => (
-                                                                        <span
+                                                                        <motion.span
                                                                             key={tech}
-                                                                            className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-primary/80 hover:bg-white/10 transition-colors"
+                                                                            variants={{
+                                                                                hidden: { opacity: 0, scale: 0.8 },
+                                                                                visible: { opacity: 1, scale: 1 }
+                                                                            }}
+                                                                            className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-primary/80 hover:bg-white/10 transition-colors cursor-default"
                                                                         >
                                                                             {tech}
-                                                                        </span>
+                                                                        </motion.span>
                                                                     ))}
-                                                                </div>
+                                                                </motion.div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -361,7 +698,7 @@ export default function Experience() {
                         className="grid grid-cols-1 md:grid-cols-3 gap-6"
                     >
                         {EXPERIENCES.map((exp) => {
-                            const days = exp.id === 'sapas' ? currentDaysSapas : calculateDays(exp.startDate, exp.endDate);
+                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
 
                             return (
                                 <div key={exp.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-6 hover:border-primary/30 transition-colors group">
@@ -398,7 +735,11 @@ export default function Experience() {
                                                 <span className="text-xs font-bold uppercase tracking-wider">Tiempo Trabajado</span>
                                             </div>
                                             <p className="text-3xl font-bold text-white">
-                                                {days} <span className="text-sm text-muted-foreground font-normal">días</span>
+                                                <Counter
+                                                    value={convertTime(ms, timeUnit)}
+                                                    suffix={` ${timeUnit}`}
+                                                    decimals={getDecimals(timeUnit)}
+                                                />
                                             </p>
                                         </div>
 
@@ -423,15 +764,15 @@ export default function Experience() {
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <p className="text-[10px] text-muted-foreground mb-1 uppercase">Vs Anterior</p>
-                                                    <p className={`text-xl font-bold ${exp.growthVsPrevious && exp.growthVsPrevious > 0 ? 'text-green-400' : 'text-white'}`}>
-                                                        {exp.growthVsPrevious ? `+${exp.growthVsPrevious}%` : '-'}
-                                                    </p>
+                                                    <div className={`text-xl font-bold ${exp.growthVsPrevious && exp.growthVsPrevious > 0 ? 'text-green-400' : 'text-white'}`}>
+                                                        {exp.growthVsPrevious ? <Counter value={exp.growthVsPrevious} prefix="+" suffix="%" decimals={2} /> : '-'}
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <p className="text-[10px] text-muted-foreground mb-1 uppercase">Vs Inicio</p>
-                                                    <p className={`text-xl font-bold ${exp.growthTotal && exp.growthTotal > 0 ? 'text-green-400' : 'text-white'}`}>
-                                                        {exp.growthTotal ? `+${exp.growthTotal}%` : '-'}
-                                                    </p>
+                                                    <div className={`text-xl font-bold ${exp.growthTotal && exp.growthTotal > 0 ? 'text-green-400' : 'text-white'}`}>
+                                                        {exp.growthTotal ? <Counter value={exp.growthTotal} prefix="+" suffix="%" decimals={2} /> : '-'}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -439,6 +780,129 @@ export default function Experience() {
                                 </div>
                             )
                         })}
+                    </motion.div>
+                )}
+
+                {/* Analytics View */}
+                {viewMode === 'analytics' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-8 max-w-4xl mx-auto"
+                    >
+                        {/* Salary Growth Chart */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+                            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <TrendingUp className="text-green-400" size={20} />
+                                    Crecimiento Salarial ({salaryMetric === 'total' ? 'Acumulado' : 'Vs. Anterior'})
+                                </h3>
+
+                                {/* Toggle */}
+                                <div className="bg-black/40 p-1 rounded-lg flex text-xs font-medium">
+                                    <button
+                                        onClick={() => setSalaryMetric('total')}
+                                        className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'total' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+                                    >
+                                        Acumulado
+                                    </button>
+                                    <button
+                                        onClick={() => setSalaryMetric('previous')}
+                                        className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'previous' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+                                    >
+                                        Vs. Anterior
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                {[...EXPERIENCES].reverse().map((exp, i) => {
+                                    const value = salaryMetric === 'total' ? exp.growthTotal : exp.growthVsPrevious;
+                                    // Handle missing or zero values comfortably
+                                    const displayValue = value || 0;
+                                    // For visual bar, cap at 100 or scale suitably. If it's "previous", 100% is a huge jump, but fine.
+                                    const barWidth = Math.min(Math.abs(displayValue), 100);
+
+                                    return (
+                                        <div key={exp.id} className="space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-white font-medium">{exp.company}</span>
+                                                <span className={`font-mono ${displayValue >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {displayValue > 0 ? '+' : ''}{displayValue.toFixed(2)}%
+                                                </span>
+                                            </div>
+                                            <div className="h-4 bg-white/10 rounded-full overflow-hidden relative">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${barWidth}%` }}
+                                                    transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
+                                                    className={`absolute top-0 left-0 h-full rounded-full ${displayValue >= 0 ? 'bg-gradient-to-r from-green-500 to-emerald-300' : 'bg-gradient-to-r from-red-500 to-orange-400'}`}
+                                                />
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            <p className="mt-6 text-xs text-muted-foreground text-center">
+                                {salaryMetric === 'total'
+                                    ? '*Crecimiento porcentual respecto al salario inicial base.'
+                                    : '*Crecimiento porcentual respecto a la posición inmediatemente anterior.'}
+                            </p>
+                        </div>
+
+                        {/* Time Distribution */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <Clock className="text-purple-400" size={20} />
+                                Distribución de Tiempo
+                            </h3>
+                            <div className="flex h-12 rounded-full overflow-hidden w-full ring-4 ring-black/40 shadow-2xl">
+                                {[...EXPERIENCES].reverse().map((exp, i) => {
+                                    const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                    const percent = (ms / totalMs) * 100;
+
+                                    // Distinct colors per company
+                                    // Sapas: Primary (Pink/Reddish), Timestamp: Blue, Inetum: Emerald/Teal
+                                    const colorClass =
+                                        exp.id === 'sapas' ? 'bg-primary' :
+                                            exp.id === 'timestamp' ? 'bg-blue-600' :
+                                                'bg-emerald-600';
+
+                                    return (
+                                        <motion.div
+                                            key={exp.id}
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${percent}%` }}
+                                            transition={{ duration: 1, ease: "anticipate" }}
+                                            className={`h-full relative transition-all hover:brightness-110 cursor-crosshair flex items-center justify-center ${colorClass}`}
+                                            title={`${exp.company}: ${percent.toFixed(1)}%`}
+                                        >
+                                            <span className="text-white/90 font-bold text-xs truncate px-2 drop-shadow-md hidden md:block">
+                                                {exp.company} ({percent.toFixed(0)}%)
+                                            </span>
+                                        </motion.div>
+                                    )
+                                })}
+                            </div>
+                            <div className="flex flex-wrap gap-4 justify-center mt-6">
+                                {[...EXPERIENCES].reverse().map((exp) => {
+                                    const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                    const percent = (ms / totalMs) * 100;
+                                    const bgClass =
+                                        exp.id === 'sapas' ? 'bg-primary' :
+                                            exp.id === 'timestamp' ? 'bg-blue-600' :
+                                                'bg-emerald-600';
+
+                                    return (
+                                        <div key={exp.id} className="flex items-center gap-2 text-sm bg-white/5 px-3 py-1.5 rounded-full border border-white/5 shadow-sm">
+                                            <div className={`w-3 h-3 rounded-full ${bgClass} shadow-lg shadow-black/50`} />
+                                            <span className="text-white/90 font-medium">{exp.company}</span>
+                                            <span className="text-muted-foreground font-mono text-xs">| {percent.toFixed(1)}%</span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
                     </motion.div>
                 )}
             </div>
