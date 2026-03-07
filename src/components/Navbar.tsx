@@ -8,6 +8,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ColorSwitcher from "./ColorSwitcher";
 import DownloadCV from "./DownloadCV";
+import HireMeWizard from "./widgets/HireMeWizard";
 import { cn } from "@/lib/utils";
 
 const MAIN_LINKS = [
@@ -31,6 +32,7 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
+    const [isHireWizardOpen, setIsHireWizardOpen] = useState(false);
     const pathname = usePathname();
 
     useEffect(() => {
@@ -128,16 +130,30 @@ export default function Navbar() {
                     </div>
 
                     <div className="w-px h-6 bg-white/20 mx-2" />
+
+                    <button
+                        onClick={() => setIsHireWizardOpen(true)}
+                        className="px-6 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/50 hover:border-primary font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] flex items-center gap-2 animate-pulse"
+                    >
+                        HIRE ME
+                    </button>
+
                     <DownloadCV variant="ghost" />
                     <ColorSwitcher />
                 </div>
 
                 {/* Mobile Menu Button */}
-                <div className="md:hidden flex items-center gap-4">
+                <div className="md:hidden flex items-center gap-3">
+                    <button
+                        onClick={() => setIsHireWizardOpen(true)}
+                        className="px-4 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/50 text-xs font-bold rounded-lg transition-all shadow-[0_0_15px_rgba(20,184,166,0.3)] animate-pulse"
+                    >
+                        HIRE ME
+                    </button>
                     <ColorSwitcher />
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                     >
                         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
@@ -171,6 +187,11 @@ export default function Navbar() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <HireMeWizard
+                isOpen={isHireWizardOpen}
+                onClose={() => setIsHireWizardOpen(false)}
+            />
         </nav>
     );
 }
