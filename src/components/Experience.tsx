@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { ChevronDown, ChevronUp, Clock, TrendingUp, Calendar, Users, Briefcase, MapPin, ExternalLink } from "lucide-react";
 import { createPortal } from "react-dom";
 import Counter from "./ui/Counter";
+import ExperienceMilestones from "./ExperienceMilestones";
 
 // --- Types ---
 interface ExperienceItem {
@@ -191,7 +192,7 @@ const getDecimals = (unit: TimeUnit) => {
 
 // --- Component ---
 export default function Experience() {
-    const [viewMode, setViewMode] = useState<'timeline' | 'comparison' | 'analytics'>('timeline');
+    const [viewMode, setViewMode] = useState<'timeline' | 'comparison' | 'analytics' | 'milestones'>('timeline');
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
     const [currentMsSapas, setCurrentMsSapas] = useState(0);
     const [timeUnit, setTimeUnit] = useState<TimeUnit>('Días');
@@ -487,6 +488,15 @@ export default function Experience() {
                                     }`}
                             >
                                 Analítica
+                            </button>
+                            <button
+                                onClick={() => setViewMode('milestones')}
+                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'milestones'
+                                    ? 'bg-primary text-white shadow-lg'
+                                    : 'text-muted-foreground hover:text-white'
+                                    }`}
+                            >
+                                Hitos
                             </button>
                         </div>
                     </div>
@@ -1061,6 +1071,16 @@ export default function Experience() {
                                 </div>
                             </div>
                         </div>
+                    </motion.div>
+                )}
+
+                {/* Milestones View */}
+                {viewMode === 'milestones' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <ExperienceMilestones experiences={EXPERIENCES} />
                     </motion.div>
                 )}
             </div>
