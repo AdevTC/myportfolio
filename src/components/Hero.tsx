@@ -11,6 +11,11 @@ export default function Hero() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [loopNum, setLoopNum] = useState(0);
     const [typingSpeed, setTypingSpeed] = useState(50);
+    const [shineKey, setShineKey] = useState(0);
+
+    const triggerShine = () => {
+        setShineKey(prev => prev + 1);
+    };
 
     useEffect(() => {
         const handleType = () => {
@@ -41,28 +46,29 @@ export default function Hero() {
             <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-[100px] -z-10 animate-blob" />
             <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] -z-10 animate-blob animation-delay-2000" />
 
-            <div className="max-w-7xl mx-auto px-6 w-full">
+            <div className="max-w-7xl mx-auto px-6 w-full flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
+                {/* Left Column: Text & CTAs */}
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="flex flex-col items-center md:items-start text-center md:text-left"
+                    className="flex flex-col items-center lg:items-start text-center lg:text-left max-w-2xl"
                 >
                     <h2 className="text-xl md:text-2xl font-medium text-primary mb-4">
                         Hola, soy
                     </h2>
-                    <h1 className="text-5xl md:text-8xl font-bold tracking-tight mb-6">
+                    <h1 className="text-5xl md:text-7xl xl:text-8xl font-bold tracking-tight mb-6 text-white">
                         Adrián Tomás Cerdá
                     </h1>
 
-                    <div className="h-20 md:h-24">
-                        <p className="text-xl md:text-4xl text-muted-foreground font-light">
+                    <div className="h-24 md:h-28">
+                        <p className="text-xl md:text-3xl xl:text-4xl text-muted-foreground font-light leading-relaxed">
                             {text}
-                            <span className="animate-pulse">|</span>
+                            <span className="animate-pulse text-primary font-bold">|</span>
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center md:justify-start gap-4 mt-8 w-full">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-4 mt-8 w-full">
                         <a
                             href="/projects"
                             className="group relative w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-full font-bold overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/50 flex justify-center items-center"
@@ -88,6 +94,54 @@ export default function Hero() {
                             />
                         </div>
                     </div>
+                </motion.div>
+
+                {/* Right Column: Profile Image */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8, x: 50 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="flex justify-center items-center relative shrink-0 group/img"
+                >
+                    {/* Glow behind image matching theme color */}
+                    <div 
+                        style={{ backgroundColor: "color-mix(in srgb, var(--primary) 20%, transparent)" }}
+                        className="absolute inset-0 rounded-full blur-3xl scale-95 animate-pulse duration-[8s] transition-all duration-500 group-hover/img:scale-110 group-hover/img:bg-primary/30" 
+                    />
+
+                    {/* Animated Floating Container */}
+                    <motion.div
+                        animate={{ y: [-8, 8, -8] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        whileHover={{ scale: 1.05, rotate: 1.5 }}
+                        onMouseEnter={triggerShine}
+                        onClick={triggerShine}
+                        style={{ 
+                            backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)",
+                            borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)"
+                        }}
+                        className="relative w-72 h-72 md:w-96 md:h-96 lg:w-[420px] lg:h-[420px] rounded-full border p-2.5 backdrop-blur-xl shadow-2xl flex items-center justify-center overflow-hidden transition-all duration-300 hover:border-primary/50 cursor-pointer"
+                    >
+                        <img
+                            src="/brand/FOTILLO.png"
+                            alt="Adrián Tomás Cerdá"
+                            className="w-full h-full object-cover rounded-full transition-transform duration-500 group-hover/img:scale-105"
+                        />
+
+                        {/* Haz de Luz (Shine/Sweep Effect) - Disparado en hover y clic (móvil/escritorio) */}
+                        {shineKey > 0 && (
+                            <motion.div 
+                                key={shineKey}
+                                style={{
+                                    background: "linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--primary) 45%, transparent) 50%, transparent 70%)"
+                                }}
+                                initial={{ x: "-100%" }}
+                                animate={{ x: "100%" }}
+                                transition={{ duration: 1.2, ease: "easeOut" }}
+                                className="absolute inset-0 w-full h-full pointer-events-none"
+                            />
+                        )}
+                    </motion.div>
                 </motion.div>
             </div>
 
