@@ -460,11 +460,11 @@ export default function Experience() {
                     </div>
 
                     {/* View Toggle (Pill Style Reverted) */}
-                    <div className="flex justify-center">
-                        <div className="bg-white/5 border border-white/10 p-1 rounded-full flex items-center">
+                    <div className="flex justify-center px-4 md:px-0 w-full">
+                        <div className="bg-white/5 border border-white/10 p-1 rounded-2xl md:rounded-full grid grid-cols-2 md:flex md:items-center w-full max-w-[340px] md:max-w-none md:w-auto gap-1 md:gap-0">
                             <button
                                 onClick={() => setViewMode('timeline')}
-                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'timeline'
+                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'timeline'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
@@ -473,7 +473,7 @@ export default function Experience() {
                             </button>
                             <button
                                 onClick={() => setViewMode('comparison')}
-                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'comparison'
+                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'comparison'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
@@ -482,7 +482,7 @@ export default function Experience() {
                             </button>
                             <button
                                 onClick={() => setViewMode('analytics')}
-                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'analytics'
+                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'analytics'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
@@ -491,7 +491,7 @@ export default function Experience() {
                             </button>
                             <button
                                 onClick={() => setViewMode('milestones')}
-                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'milestones'
+                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'milestones'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
