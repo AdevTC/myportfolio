@@ -6,7 +6,8 @@ import { verifyAdminPassword } from "@/app/actions";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot, doc, deleteDoc, getDocs } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Eye, Users, Clock, LogOut, CheckCircle, Terminal, Laptop, Trash2, Key, Heart, RefreshCw } from "lucide-react";
+import { Lock, Eye, Users, Clock, LogOut, CheckCircle, Terminal, Laptop, Trash2, Key, Heart, RefreshCw, Mail, Briefcase, Building, DollarSign, Globe } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SessionData {
     sessionId: string;
@@ -32,6 +33,32 @@ interface LikeLog {
     commentText?: string;
 }
 
+interface ContactMessage {
+    id: string;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    createdAt: Date;
+}
+
+interface HireRequest {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    linkedin: string;
+    company: string;
+    companyWebsite: string;
+    role: string;
+    salaryRange: string;
+    meetingTime: string;
+    workMode: string;
+    message: string;
+    status: string;
+    createdAt: Date;
+}
+
 export default function AdminPage() {
     const { user, logout } = useAuth();
     const [adminVerified, setAdminVerified] = useState(false);
@@ -46,6 +73,99 @@ export default function AdminPage() {
     // Likes states
     const [likesLog, setLikesLog] = useState<LikeLog[]>([]);
     const [loadingLikes, setLoadingLikes] = useState(true);
+
+    // Inbox states
+    const [activeInboxTab, setActiveInboxTab] = useState<"messages" | "hiring">("messages");
+    const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
+    const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
+    const [loadingInbox, setLoadingInbox] = useState(true);
+    const [inboxError, setInboxError] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!adminVerified) return;
+
+        setLoadingInbox(true);
+        setInboxError(false);
+
+        // 1. Listen to contact messages
+        const contactQuery = query(collection(db, "contact_messages"), orderBy("createdAt", "desc"));
+        const unsubContact = onSnapshot(contactQuery, (snapshot) => {
+            const msgs: ContactMessage[] = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                msgs.push({
+                    id: doc.id,
+                    name: data.name || "",
+                    email: data.email || "",
+                    subject: data.subject || "",
+                    message: data.message || "",
+                    createdAt: data.createdAt?.toDate() || new Date()
+                });
+            });
+            setContactMessages(msgs);
+            setLoadingInbox(false);
+        }, (err) => {
+            console.error("Error fetching contact messages:", err);
+            setInboxError(true);
+            setLoadingInbox(false);
+        });
+
+        // 2. Listen to hire requests
+        const hireQuery = query(collection(db, "hire_requests"), orderBy("createdAt", "desc"));
+        const unsubHire = onSnapshot(hireQuery, (snapshot) => {
+            const reqs: HireRequest[] = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                reqs.push({
+                    id: doc.id,
+                    name: data.name || "",
+                    email: data.email || "",
+                    phone: data.phone || "",
+                    linkedin: data.linkedin || "",
+                    company: data.company || "",
+                    companyWebsite: data.companyWebsite || "",
+                    role: data.role || "",
+                    salaryRange: data.salaryRange || "",
+                    meetingTime: data.meetingTime || "",
+                    workMode: data.workMode || "",
+                    message: data.message || "",
+                    status: data.status || "new",
+                    createdAt: data.createdAt?.toDate() || new Date()
+                });
+            });
+            setHireRequests(reqs);
+        }, (err) => {
+            console.error("Error fetching hire requests:", err);
+            setInboxError(true);
+        });
+
+        return () => {
+            unsubContact();
+            unsubHire();
+        };
+    }, [adminVerified]);
+
+    const handleDeleteContactMessage = async (id: string) => {
+        if (confirm("¿Seguro que deseas eliminar este mensaje de contacto?")) {
+            try {
+                await deleteDoc(doc(db, "contact_messages", id));
+            } catch (err) {
+                console.error("Error deleting contact message:", err);
+                alert("No tienes permisos para eliminar este mensaje.");
+            }
+        }
+    };
+
+    const handleDeleteHireRequest = async (id: string) => {
+        if (confirm("¿Seguro que deseas eliminar esta propuesta de contratación?")) {
+            try {
+                await deleteDoc(doc(db, "hire_requests", id));
+            } catch (err) {
+                console.error("Error deleting hire request:", err);
+                alert("No tienes permisos para eliminar esta propuesta.");
+            }
+        }
+    };
 
     const fetchAllLikes = async () => {
         setLoadingLikes(true);
@@ -409,6 +529,169 @@ export default function AdminPage() {
                             <p className="text-[10px] text-zinc-500 mt-1">Tiempo de foco activo promedio</p>
                         </div>
                     </div>
+                </div>
+
+                {/* Inbox Section (Contact & Hiring) */}
+                <div className="glass rounded-2xl border-white/5 overflow-hidden">
+                    <div className="px-6 py-5 border-b border-white/5 bg-white/[0.01] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                            <Mail size={16} className="text-primary" />
+                            <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-zinc-300">
+                                Buzón de Entrada y Solicitudes
+                            </h3>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setActiveInboxTab("messages")}
+                                className={cn(
+                                    "px-4 py-1.5 rounded-xl text-xs font-mono uppercase transition-all border",
+                                    activeInboxTab === "messages" 
+                                        ? "bg-primary text-white border-primary/30" 
+                                        : "bg-white/5 text-zinc-400 border-white/10 hover:text-white"
+                                )}
+                            >
+                                Mensajes ({contactMessages.length})
+                            </button>
+                            <button
+                                onClick={() => setActiveInboxTab("hiring")}
+                                className={cn(
+                                    "px-4 py-1.5 rounded-xl text-xs font-mono uppercase transition-all border",
+                                    activeInboxTab === "hiring" 
+                                        ? "bg-primary text-white border-primary/30" 
+                                        : "bg-white/5 text-zinc-400 border-white/10 hover:text-white"
+                                )}
+                            >
+                                Propuestas ({hireRequests.length})
+                            </button>
+                        </div>
+                    </div>
+
+                    {loadingInbox ? (
+                        <div className="p-8 text-center text-zinc-500 text-xs font-mono">Cargando buzón...</div>
+                    ) : inboxError ? (
+                        <div className="p-8 text-center text-red-400/90 text-xs font-mono bg-red-500/5 border border-red-500/10 m-6 rounded-2xl">
+                            ⚠️ Acceso denegado: Inicia sesión con la cuenta de administrador oficial (adriantomascv@gmail.com) para poder ver los mensajes privados y propuestas de contratación.
+                        </div>
+                    ) : activeInboxTab === "messages" ? (
+                        contactMessages.length === 0 ? (
+                            <div className="p-8 text-center text-zinc-500 text-xs font-mono">No hay mensajes de contacto recibidos.</div>
+                        ) : (
+                            <div className="divide-y divide-white/5 max-h-[450px] overflow-y-auto">
+                                {contactMessages.map((msg) => (
+                                    <div key={msg.id} className="p-6 hover:bg-white/[0.01] transition-colors flex justify-between items-start gap-4">
+                                        <div className="space-y-2 flex-grow">
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                <span className="font-bold text-white text-sm">{msg.name}</span>
+                                                <span className="text-zinc-500 text-xs">{msg.email}</span>
+                                                <span className="text-[10px] text-zinc-600 ml-auto font-mono">
+                                                    {msg.createdAt.toLocaleDateString()} {msg.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                            <div className="text-zinc-300 font-semibold text-xs">Asunto: {msg.subject}</div>
+                                            <p className="text-zinc-400 text-xs whitespace-pre-wrap bg-black/20 p-4 rounded-xl border border-white/5 font-sans leading-relaxed">
+                                                "{msg.message}"
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteContactMessage(msg.id)}
+                                            className="text-zinc-600 hover:text-red-400 p-1.5 rounded hover:bg-red-500/10 transition-all self-start"
+                                            title="Eliminar mensaje"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )
+                    ) : (
+                        hireRequests.length === 0 ? (
+                            <div className="p-8 text-center text-zinc-500 text-xs font-mono">No hay propuestas de contratación recibidas.</div>
+                        ) : (
+                            <div className="divide-y divide-white/5 max-h-[450px] overflow-y-auto">
+                                {hireRequests.map((req) => (
+                                    <div key={req.id} className="p-6 hover:bg-white/[0.01] transition-colors flex justify-between items-start gap-4">
+                                        <div className="space-y-4 flex-grow">
+                                            {/* Header */}
+                                            <div className="flex flex-wrap items-start justify-between gap-2">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-white text-sm">{req.name}</span>
+                                                        {req.linkedin && (
+                                                            <a href={req.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-[10px]">
+                                                                LinkedIn ↗
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-zinc-500 text-xs">{req.email} {req.phone && `| Tel: ${req.phone}`}</div>
+                                                </div>
+                                                <div className="text-right space-y-1">
+                                                    <span className="text-[10px] text-zinc-600 font-mono block">
+                                                        {req.createdAt.toLocaleDateString()} {req.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                    <span className={cn(
+                                                        "px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider",
+                                                        req.workMode === "remote" ? "bg-green-500/10 text-green-400 border border-green-500/20" :
+                                                        req.workMode === "hybrid" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                                        "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                                                    )}>
+                                                        {req.workMode === "remote" ? "100% Remoto" : req.workMode === "hybrid" ? "Híbrido" : "Presencial"}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Details Info Grid */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-black/20 p-4 rounded-xl border border-white/5">
+                                                <div>
+                                                    <div className="text-[10px] text-zinc-600 uppercase font-mono">Empresa</div>
+                                                    <div className="text-xs font-semibold text-zinc-300 flex items-center gap-1">
+                                                        <Building size={12} className="text-zinc-500" />
+                                                        {req.company}
+                                                        {req.companyWebsite && (
+                                                            <a href={req.companyWebsite} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white">
+                                                                <Globe size={10} />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] text-zinc-600 uppercase font-mono">Puesto / Rol</div>
+                                                    <div className="text-xs font-semibold text-zinc-300 flex items-center gap-1">
+                                                        <Briefcase size={12} className="text-zinc-500" />
+                                                        {req.role || "No especificado"}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] text-zinc-600 uppercase font-mono">Oferta / Salario</div>
+                                                    <div className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                                        <DollarSign size={12} className="text-emerald-500/50" />
+                                                        {req.salaryRange || "No especificado"}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Message */}
+                                            {req.message && (
+                                                <div className="space-y-1">
+                                                    <div className="text-[10px] text-zinc-600 uppercase font-mono">Notas del Reclutador:</div>
+                                                    <p className="text-zinc-400 text-xs whitespace-pre-wrap bg-black/10 p-3 rounded-xl border border-white/5 font-sans leading-relaxed">
+                                                        "{req.message}"
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteHireRequest(req.id)}
+                                            className="text-zinc-600 hover:text-red-400 p-1.5 rounded hover:bg-red-500/10 transition-all self-start"
+                                            title="Eliminar propuesta"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )
+                    )}
                 </div>
 
                 {/* Registered Users Section */}
