@@ -44,3 +44,11 @@ export async function sendEmail(formData: FormData) {
         return { success: false, error: "Failed to send email" };
     }
 }
+
+export async function verifyAdminPassword(password: string) {
+    const adminPassword = process.env.ADMIN_PASSWORD || "admin1234";
+    if (password === adminPassword) {
+        return { success: true };
+    }
+    return { success: false, error: "Contraseña incorrecta" };
+}

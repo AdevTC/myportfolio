@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { Star, MessageSquare, Send, Quote, Loader2, CheckCircle2, ShieldCheck, Filter, ChevronDown, User, Heart, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, updateDoc, doc, increment, getDoc, setDoc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
-// ...
+import { useAuth } from "@/context/AuthContext";
 import { useFloatingComponents } from "@/context/FloatingComponentContext";
 
 const CATEGORIES = ["General", "Proyectos", "Diseño", "Funcionalidad", "Sugerencia"];
@@ -36,8 +36,8 @@ interface Comment {
 export default function Comments() {
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(true);
-    // Removed showModal state and form state
     const { toggleWidget } = useFloatingComponents();
+    const { user } = useAuth();
 
     // Filters & Sort
     const [activeCategory, setActiveCategory] = useState("Todos");
@@ -45,10 +45,45 @@ export default function Comments() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSortOpen, setIsSortOpen] = useState(false);
 
-    // Removed form state and handlers (handleSubmit, etc)
+    const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
+    const [likeError, setLikeError] = useState<{ [commentId: string]: string }>({});
+
+    // Load liked comments from localStorage when user changes
+    useEffect(() => {
+        if (!user) {
+            setMyLikes(new Set());
+            return;
+        }
+
+        const liked = new Set<string>();
+        const now = Date.now();
+        const prefix = "liked_comment_";
+        const suffix = `_${user.uid}`;
+        
+        // 1. Collect all keys to avoid index shift issues during removal
+        const allKeys: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) allKeys.push(key);
+        }
+
+        // 2. Process keys
+        allKeys.forEach((key) => {
+            if (key.startsWith(prefix)) {
+                const timestamp = parseInt(localStorage.getItem(key) || "0", 10);
+                if (now - timestamp >= 24 * 60 * 60 * 1000) {
+                    localStorage.removeItem(key);
+                } else if (key.endsWith(suffix)) {
+                    const commentId = key.substring(prefix.length, key.length - suffix.length);
+                    liked.add(commentId);
+                }
+            }
+        });
+
+        setMyLikes(liked);
+    }, [user]);
 
     useEffect(() => {
-        // ... (keep fetch logic)
         const q = query(
             collection(db, "comments"),
             orderBy("createdAt", "desc")
@@ -65,7 +100,6 @@ export default function Comments() {
     }, []);
 
     const handleSort = (items: Comment[]) => {
-        // ... (keep sort logic)
         const sorted = [...items];
         switch (sortBy) {
             case "newest": return sorted.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
@@ -77,11 +111,89 @@ export default function Comments() {
     };
 
     const handleLike = async (id: string) => {
-        // ... (keep like logic)
-        const ref = doc(db, "comments", id);
-        updateDoc(ref, {
-            likes: increment(1)
-        }).catch(console.error);
+        if (!user) {
+            setLikeError(prev => ({ ...prev, [id]: "Inicia sesión para dar me gusta." }));
+            setTimeout(() => {
+                setLikeError(prev => {
+                    const next = { ...prev };
+                    delete next[id];
+                    return next;
+                });
+            }, 3000);
+            return;
+        }
+
+        const now = Date.now();
+
+        if (myLikes.has(id)) {
+            setLikeError(prev => ({ ...prev, [id]: "Ya has dado me gusta hoy." }));
+            setTimeout(() => {
+                setLikeError(prev => {
+                    const next = { ...prev };
+                    delete next[id];
+                    return next;
+                });
+            }, 3000);
+            return;
+        }
+
+        try {
+            const likeDocRef = doc(db, "comments", id, "likes", user.uid);
+            const likeDoc = await getDoc(likeDocRef);
+
+            if (likeDoc.exists()) {
+                const data = likeDoc.data();
+                const lastLiked = data.likedAt?.toDate?.()?.getTime() || 0;
+                if (now - lastLiked < 24 * 60 * 60 * 1000) {
+                    setMyLikes(prev => {
+                        const next = new Set(prev);
+                        next.add(id);
+                        return next;
+                    });
+                    localStorage.setItem(`liked_comment_${id}_${user.uid}`, lastLiked.toString());
+                    
+                    setLikeError(prev => ({ ...prev, [id]: "Ya has dado me gusta hoy." }));
+                    setTimeout(() => {
+                        setLikeError(prev => {
+                            const next = { ...prev };
+                            delete next[id];
+                            return next;
+                        });
+                    }, 3000);
+                    return;
+                }
+            }
+
+            await setDoc(likeDocRef, {
+                likedAt: new Date(),
+                userId: user.uid,
+                email: user.email || "",
+                name: user.displayName || ""
+            });
+
+            const commentRef = doc(db, "comments", id);
+            await updateDoc(commentRef, {
+                likes: increment(1)
+            });
+
+            setMyLikes(prev => {
+                const next = new Set(prev);
+                next.add(id);
+                return next;
+            });
+            localStorage.setItem(`liked_comment_${id}_${user.uid}`, now.toString());
+
+        } catch (error) {
+            console.error("Error liking comment:", error);
+            setLikeError(prev => ({ ...prev, [id]: "Error al registrar me gusta." }));
+            setTimeout(() => {
+                setLikeError(prev => {
+                    const next = { ...prev };
+                    delete next[id];
+                    return next;
+                });
+            }, 3000);
+        }
     };
 
     const formatName = (name: string, surname1: string, surname2?: string) => {
@@ -263,7 +375,15 @@ export default function Comments() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {displayedComments.map((comment, i) => (
-                            <CommentItem key={comment.id} comment={comment} index={i} handleLike={handleLike} formatName={formatName} />
+                            <CommentItem 
+                                key={comment.id} 
+                                comment={comment} 
+                                index={i} 
+                                handleLike={handleLike} 
+                                formatName={formatName} 
+                                myLikes={myLikes}
+                                likeError={likeError}
+                            />
                         ))}
                     </div>
                 )}
@@ -300,8 +420,21 @@ function StarRating({ rating }: { rating: number }) {
     );
 }
 
-function CommentItem({ comment, index, handleLike, formatName }: { comment: Comment, index: number, handleLike: (id: string) => void, formatName: any }) {
-    // ... (keep implementation)
+function CommentItem({ 
+    comment, 
+    index, 
+    handleLike, 
+    formatName,
+    myLikes,
+    likeError
+}: { 
+    comment: Comment, 
+    index: number, 
+    handleLike: (id: string) => void, 
+    formatName: any,
+    myLikes: Set<string>,
+    likeError: { [commentId: string]: string }
+}) {
     const [isExpanded, setIsExpanded] = useState(false);
     const isLong = comment.message.length > 140;
 
@@ -313,7 +446,6 @@ function CommentItem({ comment, index, handleLike, formatName }: { comment: Comm
             transition={{ delay: index * 0.05 }}
             className="break-inside-avoid bg-white/5 border border-white/5 p-6 rounded-3xl hover:border-primary/20 transition-all duration-300 group relative flex flex-col h-full"
         >
-            {/* ... keep content ... */}
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white font-bold text-sm">
@@ -359,18 +491,43 @@ function CommentItem({ comment, index, handleLike, formatName }: { comment: Comm
                 )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-auto">
+            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-auto relative">
                 <span className="text-[10px] text-zinc-600">
                     {comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleDateString() : 'Reciente'}
                 </span>
 
-                <button
-                    onClick={() => handleLike(comment.id)}
-                    className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-500 transition-colors group/like"
-                >
-                    <Heart size={14} className={`group-hover/like:fill-red-500 ${comment.likes > 0 ? 'text-red-500' : ''}`} />
-                    <span className="font-medium">{comment.likes || 0}</span>
-                </button>
+                <div className="flex items-center gap-2 relative">
+                    <AnimatePresence>
+                        {likeError[comment.id] && (
+                            <motion.span
+                                key="error"
+                                initial={{ opacity: 0, y: 5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 5 }}
+                                className="absolute right-0 bottom-full mb-1.5 px-2 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-[9px] font-mono rounded-lg whitespace-nowrap z-20"
+                            >
+                                {likeError[comment.id]}
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+
+                    <button
+                        onClick={() => handleLike(comment.id)}
+                        className={cn(
+                            "flex items-center gap-1.5 text-xs transition-colors group/like",
+                            myLikes.has(comment.id) ? "text-red-500" : "text-zinc-500 hover:text-red-500"
+                        )}
+                    >
+                        <Heart 
+                            size={14} 
+                            className={cn(
+                                "transition-transform duration-200 group-active/like:scale-125",
+                                myLikes.has(comment.id) ? "fill-red-500 text-red-500" : "group-hover/like:fill-red-500/30"
+                            )} 
+                        />
+                        <span className="font-medium">{comment.likes || 0}</span>
+                    </button>
+                </div>
             </div>
         </motion.div>
     );

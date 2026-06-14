@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, LogOut, ShieldAlert } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ColorSwitcher from "./ColorSwitcher";
 import DownloadCV from "./DownloadCV";
 import HireMeWizard from "./widgets/HireMeWizard";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 const MAIN_LINKS = [
     { name: "Inicio", href: "/" },
@@ -33,6 +34,7 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [isHireWizardOpen, setIsHireWizardOpen] = useState(false);
+    const { user, logout } = useAuth();
     const pathname = usePathname();
 
     useEffect(() => {
@@ -48,6 +50,8 @@ export default function Navbar() {
         if (path !== "/" && pathname.startsWith(path)) return true;
         return false;
     };
+
+    if (pathname === "/login") return null;
 
     return (
         <nav
@@ -139,6 +143,23 @@ export default function Navbar() {
                     </button>
 
                     <DownloadCV variant="ghost" />
+                    
+                    {user && user.email === "adriantomascv@gmail.com" && (
+                        <Link href="/admin" className="text-zinc-400 hover:text-primary transition-colors flex items-center p-1" title="Panel de Administración">
+                            <ShieldAlert size={18} />
+                        </Link>
+                    )}
+
+                    {user && (
+                        <button
+                            onClick={logout}
+                            className="text-xs font-semibold text-zinc-400 hover:text-red-400 transition-colors flex items-center gap-1 py-1.5"
+                            title="Cerrar sesión"
+                        >
+                            <LogOut size={14} /> Salir
+                        </button>
+                    )}
+
                     <ColorSwitcher />
                 </div>
 
@@ -183,6 +204,26 @@ export default function Navbar() {
                                     {link.name}
                                 </Link>
                             ))}
+                            {user && user.email === "adriantomascv@gmail.com" && (
+                                <Link
+                                    href="/admin"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-lg font-medium py-2 border-b border-white/5 text-zinc-300 hover:text-primary transition-colors flex items-center gap-2"
+                                >
+                                    <ShieldAlert size={18} /> Panel Admin
+                                </Link>
+                            )}
+                            {user && (
+                                <button
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        logout();
+                                    }}
+                                    className="text-lg font-medium py-2 text-zinc-400 hover:text-red-400 text-left transition-colors flex items-center gap-2 border-b border-white/5 last:border-0"
+                                >
+                                    <LogOut size={18} /> Cerrar Sesión
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}

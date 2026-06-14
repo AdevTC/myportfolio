@@ -32,6 +32,10 @@ export const metadata: Metadata = {
   },
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
+import MainLayoutWrapper from "@/components/MainLayoutWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,28 +45,33 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className={cn(outfit.className, "overflow-x-hidden")}>
         <ThemeProvider>
-          <FloatingComponentProvider>
-            <ScrollProgress />
-            <ViewCounter />
-            <CommandPalette />
-            <Navbar />
-            <main className="min-h-screen relative selection:bg-primary/30 w-full overflow-x-hidden">
-              {children}
-            </main>
+          <AuthProvider>
+            <AnalyticsTracker />
+            <FloatingComponentProvider>
+              <MainLayoutWrapper>
+                <ScrollProgress />
+                <ViewCounter />
+                <CommandPalette />
+                <Navbar />
+              </MainLayoutWrapper>
+              <main className="min-h-screen relative selection:bg-primary/30 w-full overflow-x-hidden">
+                {children}
+              </main>
 
+              {/* Corner Floating Widgets */}
+              <MainLayoutWrapper>
+                <CornerAI />
+                <Preloader />
 
+                <DesktopSidebar />
 
-            {/* Corner Floating Widgets */}
-            <CornerAI />
-            <Preloader />
+                <FloatingWindowManager />
 
-            <DesktopSidebar />
-
-            <FloatingWindowManager />
-
-            <Footer />
-            <MobileFootbar />
-          </FloatingComponentProvider>
+                <Footer />
+                <MobileFootbar />
+              </MainLayoutWrapper>
+            </FloatingComponentProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
