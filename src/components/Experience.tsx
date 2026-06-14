@@ -2,10 +2,11 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown, ChevronUp, Clock, TrendingUp, Calendar, Users, Briefcase, MapPin, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, TrendingUp, Calendar, Users, Briefcase, MapPin, ExternalLink, Server, Database, Network, ArrowRight, ArrowDown, Activity, Cpu, Layers, Coffee, Shield, Play, Square, Terminal, Zap } from "lucide-react";
 import { createPortal } from "react-dom";
 import Counter from "./ui/Counter";
 import ExperienceMilestones from "./ExperienceMilestones";
+import { cn } from "@/lib/utils";
 
 // --- Types ---
 interface ExperienceItem {
@@ -24,6 +25,7 @@ interface ExperienceItem {
     logo: string;
     workMode: string;
     url: string; // New field
+    kpis: { label: string; value: string; icon: string }[]; // New field
 }
 
 // --- Constants ---
@@ -37,7 +39,26 @@ const calculateGrowth = (current: number, previous: number) => {
     return ((current / previous) - 1) * 100;
 };
 
-// --- Data ---
+// --- Helpers ---
+const getKpiIcon = (iconName: string) => {
+    switch (iconName) {
+        case 'activity': return Activity;
+        case 'zap': return Zap;
+        case 'network': return Network;
+        case 'server': return Server;
+        case 'users': return Users;
+        case 'cpu': return Cpu;
+        case 'layers': return Layers;
+        case 'database': return Database;
+        case 'trending-up': return TrendingUp;
+        case 'briefcase': return Briefcase;
+        case 'clock': return Clock;
+        case 'coffee': return Coffee;
+        case 'shield': return Shield;
+        default: return Activity;
+    }
+};
+
 // --- Data ---
 const EXPERIENCES: ExperienceItem[] = [
     {
@@ -66,6 +87,12 @@ const EXPERIENCES: ExperienceItem[] = [
             { title: "Monitorización", desc: "Estrategias avanzadas en SAP CPI para trazabilidad completa." },
             { title: "Arquitectura", desc: "Definición de patrones de integración y diseño técnico." },
             { title: "Interoperabilidad", desc: "Conexión entre HIS heterogéneos y SAP." }
+        ],
+        kpis: [
+            { label: "Mensajes HL7 Parseados", value: "+250,000", icon: "activity" },
+            { label: "Latencia OData (BTP)", value: "<45ms", icon: "zap" },
+            { label: "Sistemas Conectados", value: "12 (HIS/SAP/etc)", icon: "network" },
+            { label: "Lógica Backend", value: "Clean Core CAP", icon: "server" }
         ]
     },
     {
@@ -92,6 +119,12 @@ const EXPERIENCES: ExperienceItem[] = [
             { title: "Automatización SF", desc: "Payloads XML dinámicos con MarkupBuilder." },
             { title: "Datos Bancarios", desc: "Gestión de campos condicionales y claves de detalle." },
             { title: "Nóminas e IRPF", desc: "iFlows para consulta y descarga de documentos." }
+        ],
+        kpis: [
+            { label: "Nóminas Procesadas/Mes", value: "+12,000", icon: "users" },
+            { label: "Groovy Scripting", value: "+3,500 líneas", icon: "cpu" },
+            { label: "Reducción de Payload", value: "-35% XML size", icon: "layers" },
+            { label: "Seguridad Financiera", value: "JWT / OAuth 2.0", icon: "shield" }
         ]
     },
     {
@@ -119,6 +152,12 @@ const EXPERIENCES: ExperienceItem[] = [
             { title: "Costes -25%", desc: "Reducción operativa tras migración a SAP CPI." },
             { title: "Automatización", desc: "Menor esfuerzo manual (-45%) con scripts Groovy." },
             { title: "SLA +20%", desc: "Mejora en tiempo de respuesta ante incidencias." }
+        ],
+        kpis: [
+            { label: "Migraciones PI/PO a CPI", value: "+15 escenarios", icon: "trending-up" },
+            { label: "Esfuerzo Manual Ahorrado", value: "45% menos", icon: "briefcase" },
+            { label: "Uptime Cloud Connector", value: "99.99%", icon: "clock" },
+            { label: "Cafés Consumidos (Est.)", value: "~850 tazas", icon: "coffee" }
         ]
     }
 ];
@@ -194,6 +233,7 @@ const getDecimals = (unit: TimeUnit) => {
 export default function Experience() {
     const [viewMode, setViewMode] = useState<'timeline' | 'comparison' | 'analytics' | 'milestones'>('timeline');
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+    const [activeCardTab, setActiveCardTab] = useState<'details' | 'architecture'>('details');
     const [currentMsSapas, setCurrentMsSapas] = useState(0);
     const [timeUnit, setTimeUnit] = useState<TimeUnit>('Días');
     const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -226,6 +266,7 @@ export default function Experience() {
         setCompaniesDropdownOpen(false);
         // Ensure we are in timeline view to see the list
         setViewMode('timeline');
+        setActiveCardTab('details');
 
         // Small delay to allow view switch and render
         setTimeout(() => {
@@ -258,6 +299,7 @@ export default function Experience() {
 
     const toggleExpand = (index: number) => {
         setExpandedIndex(expandedIndex === index ? null : index);
+        setActiveCardTab('details');
     };
 
     // Global Stats
@@ -639,77 +681,150 @@ export default function Experience() {
                                                         <p className="text-muted-foreground leading-relaxed md:hidden mb-6 block">
                                                             {exp.description}
                                                         </p>
-                                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6">
-                                                            <div className="lg:col-span-2 space-y-4">
-                                                                <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                                                    <span className="w-1 h-6 bg-primary rounded-full" />
-                                                                    Detalles y Logros
-                                                                </h4>
-                                                                <motion.ul
-                                                                    className="space-y-4"
-                                                                    initial="hidden"
-                                                                    animate="visible"
-                                                                    variants={{
-                                                                        hidden: { opacity: 0 },
-                                                                        visible: {
-                                                                            opacity: 1,
-                                                                            transition: {
-                                                                                staggerChildren: 0.1
-                                                                            }
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    {exp.achievements.map((achievement, i) => (
-                                                                        <motion.li
-                                                                            key={i}
-                                                                            variants={{
-                                                                                hidden: { opacity: 0, x: -10 },
-                                                                                visible: { opacity: 1, x: 0 }
-                                                                            }}
-                                                                            className="flex gap-3 text-muted-foreground"
-                                                                        >
-                                                                            <div className="min-w-[6px] h-[6px] rounded-full bg-primary mt-2.5" />
-                                                                            <span>
-                                                                                <strong className="text-white block mb-1">{achievement.title}</strong>
-                                                                                {achievement.desc}
-                                                                            </span>
-                                                                        </motion.li>
-                                                                    ))}
-                                                                </motion.ul>
-                                                            </div>
 
-                                                            <div>
-                                                                <h4 className="text-lg font-bold text-white mb-4">Stack Tecnológico</h4>
-                                                                <motion.div
-                                                                    className="flex flex-wrap gap-2"
-                                                                    initial="hidden"
-                                                                    animate="visible"
-                                                                    variants={{
-                                                                        hidden: { opacity: 0 },
-                                                                        visible: {
-                                                                            opacity: 1,
-                                                                            transition: {
-                                                                                staggerChildren: 0.05,
-                                                                                delayChildren: 0.2
-                                                                            }
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    {exp.tech.map((tech) => (
-                                                                        <motion.span
-                                                                            key={tech}
-                                                                            variants={{
-                                                                                hidden: { opacity: 0, scale: 0.8 },
-                                                                                visible: { opacity: 1, scale: 1 }
-                                                                            }}
-                                                                            className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-primary/80 hover:bg-white/10 transition-colors cursor-default"
-                                                                        >
-                                                                            {tech}
-                                                                        </motion.span>
-                                                                    ))}
-                                                                </motion.div>
-                                                            </div>
+                                                        {/* Sub-tab selector */}
+                                                        <div className="flex gap-2 mb-6 border-b border-white/5 pb-4 pt-6">
+                                                            <button
+                                                                onClick={() => setActiveCardTab('details')}
+                                                                className={`px-4 py-2 rounded-xl text-xs font-mono uppercase transition-all border ${
+                                                                    activeCardTab === 'details'
+                                                                        ? "bg-primary text-white border-primary/30"
+                                                                        : "bg-white/5 text-zinc-400 border-white/10 hover:text-white"
+                                                                }`}
+                                                            >
+                                                                📋 Logros y Stack
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setActiveCardTab('architecture')}
+                                                                className={`px-4 py-2 rounded-xl text-xs font-mono uppercase transition-all border ${
+                                                                    activeCardTab === 'architecture'
+                                                                        ? "bg-primary text-white border-primary/30"
+                                                                        : "bg-white/5 text-zinc-400 border-white/10 hover:text-white"
+                                                                }`}
+                                                            >
+                                                                🔗 Diagrama de Integración
+                                                            </button>
                                                         </div>
+
+                                                        <AnimatePresence mode="wait">
+                                                            {activeCardTab === 'details' ? (
+                                                                <motion.div
+                                                                    key="details"
+                                                                    initial={{ opacity: 0, y: 10 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    exit={{ opacity: 0, y: -10 }}
+                                                                    className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+                                                                >
+                                                                    <div className="lg:col-span-2 space-y-4">
+                                                                        <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                                            <span className="w-1 h-6 bg-primary rounded-full" />
+                                                                            Detalles y Logros
+                                                                        </h4>
+                                                                        <motion.ul
+                                                                            className="space-y-4"
+                                                                            initial="hidden"
+                                                                            animate="visible"
+                                                                            variants={{
+                                                                                hidden: { opacity: 0 },
+                                                                                visible: {
+                                                                                    opacity: 1,
+                                                                                    transition: {
+                                                                                        staggerChildren: 0.1
+                                                                                    }
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {exp.achievements.map((achievement, i) => (
+                                                                                <motion.li
+                                                                                    key={i}
+                                                                                    variants={{
+                                                                                        hidden: { opacity: 0, x: -10 },
+                                                                                        visible: { opacity: 1, x: 0 }
+                                                                                    }}
+                                                                                    className="flex gap-3 text-muted-foreground"
+                                                                                >
+                                                                                    <div className="min-w-[6px] h-[6px] rounded-full bg-primary mt-2.5" />
+                                                                                    <span>
+                                                                                        <strong className="text-white block mb-1">{achievement.title}</strong>
+                                                                                        {achievement.desc}
+                                                                                    </span>
+                                                                                </motion.li>
+                                                                            ))}
+                                                                        </motion.ul>
+
+                                                                        {/* KPIs and Impact Metrics Grid */}
+                                                                        {exp.kpis && exp.kpis.length > 0 && (
+                                                                            <div className="pt-8 border-t border-white/5 space-y-4">
+                                                                                <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                                                                                    <span className="w-1 h-6 bg-primary rounded-full" />
+                                                                                    Métricas de Impacto y Datos Curiosos
+                                                                                </h4>
+                                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                                                    {exp.kpis.map((kpi, idx) => {
+                                                                                        const KpiIcon = getKpiIcon(kpi.icon);
+                                                                                        return (
+                                                                                            <div
+                                                                                                key={idx}
+                                                                                                className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 hover:border-primary/20 hover:scale-[1.01] transition-all duration-300"
+                                                                                            >
+                                                                                                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                                                                                                    <KpiIcon size={20} />
+                                                                                                </div>
+                                                                                                <div>
+                                                                                                    <span className="block text-[10px] text-zinc-500 uppercase font-bold tracking-wider">{kpi.label}</span>
+                                                                                                    <span className="text-lg font-extrabold text-white font-mono">{kpi.value}</span>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        );
+                                                                                    })}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div>
+                                                                        <h4 className="text-lg font-bold text-white mb-4">Stack Tecnológico</h4>
+                                                                        <motion.div
+                                                                            className="flex flex-wrap gap-2"
+                                                                            initial="hidden"
+                                                                            animate="visible"
+                                                                            variants={{
+                                                                                hidden: { opacity: 0 },
+                                                                                visible: {
+                                                                                    opacity: 1,
+                                                                                    transition: {
+                                                                                        staggerChildren: 0.05,
+                                                                                        delayChildren: 0.2
+                                                                                    }
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {exp.tech.map((tech) => (
+                                                                                <motion.span
+                                                                                    key={tech}
+                                                                                    variants={{
+                                                                                        hidden: { opacity: 0, scale: 0.8 },
+                                                                                        visible: { opacity: 1, scale: 1 }
+                                                                                    }}
+                                                                                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-primary/80 hover:bg-white/10 transition-colors cursor-default"
+                                                                                >
+                                                                                    {tech}
+                                                                                </motion.span>
+                                                                            ))}
+                                                                        </motion.div>
+                                                                    </div>
+                                                                </motion.div>
+                                                            ) : (
+                                                                <motion.div
+                                                                    key="architecture"
+                                                                    initial={{ opacity: 0, y: 10 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    exit={{ opacity: 0, y: -10 }}
+                                                                >
+                                                                    <IntegrationFlow experienceId={exp.id} />
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -1085,5 +1200,450 @@ export default function Experience() {
                 )}
             </div>
         </section>
+    );
+}
+
+// --- Dynamic BTP/CPI Integration Flow Component ---
+interface FlowNode {
+    id: string;
+    title: string;
+    subtitle: string;
+    icon: React.ComponentType<any>;
+    tech: string;
+    description: string;
+}
+
+function IntegrationFlow({ experienceId }: { experienceId: string }) {
+    const [selectedNode, setSelectedNode] = useState<string | null>(null);
+    const [isSimulating, setIsSimulating] = useState(false);
+    const [simulationStep, setSimulationStep] = useState<number | null>(null);
+    const [simulatedLogs, setSimulatedLogs] = useState<string[]>([]);
+    
+    const terminalContainerRef = useRef<HTMLDivElement>(null);
+    const timeoutsRef = useRef<number[]>([]);
+
+    const getFlowData = (): FlowNode[] => {
+        switch (experienceId) {
+            case "sapas":
+                return [
+                    {
+                        id: "source",
+                        title: "HIS Hospitalario",
+                        subtitle: "Sistemas Clínicos",
+                        icon: Server,
+                        tech: "HL7, XML, SOAP",
+                        description: "Los sistemas de información hospitalarios emiten mensajes clínicos en formato estándar HL7 (altas, ingresos, altas médicas) en tiempo real al producirse cualquier evento asistencial."
+                    },
+                    {
+                        id: "cpi",
+                        title: "SAP CPI / BTP",
+                        subtitle: "Integration Suite",
+                        icon: Network,
+                        tech: "Groovy, Mapping, OAuth",
+                        description: "Recibe, valida y enruta los mensajes clínicos de forma segura. Realiza mapeo complejo y transformaciones de datos utilizando scripts en Groovy para su adecuación."
+                    },
+                    {
+                        id: "cap",
+                        title: "SAP CAP Backend",
+                        subtitle: "Servicios OData",
+                        icon: Server,
+                        tech: "Node.js, CDS, JWT",
+                        description: "Procesamiento de lógica de negocio en la nube a través de microservicios OData V4 desarrollados sobre SAP Cloud Application Programming Model (CAP)."
+                    },
+                    {
+                        id: "db",
+                        title: "SAP HANA DB",
+                        subtitle: "Persistencia Clínica",
+                        icon: Database,
+                        tech: "SQL, HANA Cloud",
+                        description: "La base de datos en memoria almacena de manera definitiva y estructurada la información clínica y del ciclo del paciente para su explotación analítica posterior."
+                    }
+                ];
+            case "timestamp":
+                return [
+                    {
+                        id: "sf",
+                        title: "SAP SuccessFactors",
+                        subtitle: "Core de RRHH",
+                        icon: Server,
+                        tech: "OData v2/v4, Picklists",
+                        description: "Punto de partida de la información de empleados, nóminas y estructura organizativa de la compañía. Los datos son expuestos mediante APIs REST y OData."
+                    },
+                    {
+                        id: "cpi",
+                        title: "SAP CPI Middleware",
+                        subtitle: "Integration Suite",
+                        icon: Network,
+                        tech: "Groovy, XML, Base64",
+                        description: "Procesa y manipula la información de nóminas de forma dinámica. Genera payloads XML usando MarkupBuilder en Groovy, e inyecta cabeceras codificadas en Base64."
+                    },
+                    {
+                        id: "bank",
+                        title: "Bancos / SFTP",
+                        subtitle: "Destino Financiero",
+                        icon: Database,
+                        tech: "CSV, SOAP, Insomnia",
+                        description: "Los archivos resultantes de nóminas e IRPF se transfieren de forma encriptada a servidores SFTP o servicios web bancarios para el abono efectivo de salarios."
+                    }
+                ];
+            case "inetum":
+                return [
+                    {
+                        id: "erp",
+                        title: "ERP On-Premise",
+                        subtitle: "Sistemas Legacy",
+                        icon: Server,
+                        tech: "SAP NetWeaver, XML",
+                        description: "Sistemas ERP locales de compras, ventas y finanzas que contienen los datos transaccionales tradicionales listos para ser conectados."
+                    },
+                    {
+                        id: "cc",
+                        title: "Cloud Connector",
+                        subtitle: "Túnel de Red Seguro",
+                        icon: Network,
+                        tech: "SSL, Proxy Seguro",
+                        description: "Enlace encriptado punto a punto que conecta de forma segura los recursos del ERP local con la infraestructura en la nube de SAP, sin exponer puertos externos."
+                    },
+                    {
+                        id: "cpi",
+                        title: "SAP CPI Cloud",
+                        subtitle: "Flujos de Datos",
+                        icon: Database,
+                        tech: "REST/SOAP, Mapping",
+                        description: "Plataforma en la nube donde se ejecutan las migraciones de escenarios de integración PI/PO antiguos, optimizando los costes y automatizando procesos manuales."
+                    }
+                ];
+            default:
+                return [];
+        }
+    };
+
+    const nodes = getFlowData();
+
+    // Auto-scroll terminal to bottom
+    useEffect(() => {
+        if (terminalContainerRef.current) {
+            terminalContainerRef.current.scrollTo({
+                top: terminalContainerRef.current.scrollHeight,
+                behavior: "smooth"
+            });
+        }
+    }, [simulatedLogs]);
+
+    const clearAllTimeouts = () => {
+        timeoutsRef.current.forEach(clearTimeout);
+        timeoutsRef.current = [];
+    };
+
+    // Auto-select the first node on mount or reset
+    useEffect(() => {
+        if (nodes.length > 0 && !isSimulating) {
+            setSelectedNode(nodes[0].id);
+        }
+        return () => {
+            clearAllTimeouts();
+        };
+    }, [experienceId]);
+
+    const getSimulationSequence = () => {
+        switch (experienceId) {
+            case "sapas":
+                return [
+                    { delay: 0, step: 0, text: "[12:05:01] INFO - Conexión establecida con el HIS Hospitalario." },
+                    { delay: 500, text: "[12:05:01] EVENT - Transacción clínica: ADT^A08 (Actualización Paciente)." },
+                    { delay: 1000, text: "[12:05:02] SEND - Enviando mensaje HL7 v2.x por socket TCP MLLP..." },
+                    { delay: 1800, step: 1, text: "[12:05:03] RECEIVE - Mensaje HL7 recibido en el endpoint de SAP CPI." },
+                    { delay: 2300, text: "[12:05:03] DECRYPT - Autenticación OAuth 2.0 validada con éxito." },
+                    { delay: 2800, text: "[12:05:04] PROCESS - Ejecutando script Groovy: parseando HL7 a XML." },
+                    { delay: 3300, text: "[12:05:04] SUCCESS - Conversión a payload JSON completada (3.2 KB)." },
+                    { delay: 4100, step: 2, text: "[12:05:05] HTTP - Petición POST recibida en SAP CAP /odata/v4/Patients." },
+                    { delay: 4600, text: "[12:05:05] SEC - Token JWT verificado y roles validados (Clean Core)." },
+                    { delay: 5100, text: "[12:05:06] CALC - Ejecutando validaciones de negocio en Node.js (CDS)." },
+                    { delay: 5900, step: 3, text: "[12:05:07] DB - Ejecutando query UPSERT en HANA Cloud." },
+                    { delay: 6400, text: "[12:05:07] SUCCESS - Registro de paciente #9482 actualizado en 12ms." },
+                    { delay: 6900, text: "[12:05:08] HTTP - Respuesta exitosa enviada: 201 Created." },
+                    { delay: 7500, text: "[12:05:08] SIM - ¡Integración clínica completada con éxito!" }
+                ];
+            case "timestamp":
+                return [
+                    { delay: 0, step: 0, text: "[09:30:01] INFO - Suceso de nómina disparado en SAP SuccessFactors." },
+                    { delay: 600, text: "[09:30:01] DATA - Consultando picklists y perfiles de empleados vía OData." },
+                    { delay: 1200, text: "[09:30:02] SEND - Payload de nóminas listo. Iniciando llamada HTTPS segura..." },
+                    { delay: 2000, step: 1, text: "[09:30:03] RECEIVE - Payload recibido en SAP CPI (Integration Suite)." },
+                    { delay: 2600, text: "[09:30:03] PROCESS - Iniciando script Groovy con MarkupBuilder." },
+                    { delay: 3200, text: "[09:30:04] COMPRESS - Comprimiendo payloads binarios de PDF a Base64." },
+                    { delay: 3800, text: "[09:30:04] ENCRYPT - Cifrando campos condicionales y cuentas bancarias." },
+                    { delay: 4600, step: 2, text: "[09:30:05] CONNECT - Conectando con servidor SFTP bancario vía SSH." },
+                    { delay: 5200, text: "[09:30:06] UPLOAD - Transfiriendo archivo de remesas (Remesa_Sepa.xml)." },
+                    { delay: 5800, text: "[09:30:06] SUCCESS - Transferencia completada de forma segura." },
+                    { delay: 6500, text: "[09:30:07] SIM - ¡Flujo de nóminas procesado y enviado con éxito!" }
+                ];
+            case "inetum":
+                return [
+                    { delay: 0, step: 0, text: "[17:00:01] ERP - Pedido de compra creado localmente (PO #45000982)." },
+                    { delay: 600, text: "[17:00:01] EVENT - Desencadenando RFC/IDoc saliente." },
+                    { delay: 1200, text: "[17:00:02] CONNECT - Intentando ruta de red interna local..." },
+                    { delay: 2000, step: 1, text: "[17:00:03] TUNNEL - Conexión de túnel SSL establecida con SAP BTP." },
+                    { delay: 2600, text: "[17:00:03] SEC - Mapeo de recursos locales validado (Acceso concedido)." },
+                    { delay: 3200, text: "[17:00:04] FORWARD - Petición retransmitida a la nube de forma segura." },
+                    { delay: 4000, step: 2, text: "[17:00:05] RECEIVE - Recibida petición en iFlow de SAP CPI Cloud." },
+                    { delay: 4600, text: "[17:00:05] MIGRATION - Ejecutando escenario migrado de PI/PO antiguo." },
+                    { delay: 5200, text: "[17:00:06] SUCCESS - Mapeo de esquema XML validado contra XSD." },
+                    { delay: 6000, text: "[17:00:06] SIM - ¡Escenario legado migrado y ejecutado correctamente!" }
+                ];
+            default:
+                return [];
+        }
+    };
+
+    const startSimulation = () => {
+        if (isSimulating) return;
+        clearAllTimeouts();
+        setIsSimulating(true);
+        setSimulatedLogs([]);
+        setSimulationStep(0);
+        setSelectedNode(nodes[0].id);
+
+        const sequence = getSimulationSequence();
+        const ids: number[] = [];
+
+        sequence.forEach((item) => {
+            const id = window.setTimeout(() => {
+                if (item.step !== undefined) {
+                    setSimulationStep(item.step);
+                    setSelectedNode(nodes[item.step].id);
+                }
+                setSimulatedLogs(prev => [...prev, item.text]);
+            }, item.delay);
+            ids.push(id);
+        });
+
+        const maxDelay = Math.max(...sequence.map(s => s.delay));
+        const doneId = window.setTimeout(() => {
+            setIsSimulating(false);
+            setSimulationStep(null);
+        }, maxDelay + 800);
+        ids.push(doneId);
+
+        timeoutsRef.current = ids;
+    };
+
+    const stopSimulation = () => {
+        clearAllTimeouts();
+        setIsSimulating(false);
+        setSimulationStep(null);
+        setSimulatedLogs([]);
+        if (nodes.length > 0) {
+            setSelectedNode(nodes[0].id);
+        }
+    };
+
+    if (nodes.length === 0) return null;
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div>
+                    <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                        <span className="w-1 h-6 bg-primary rounded-full" />
+                        Flujo de Integración SAP BTP
+                    </h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl mt-1">
+                        Haz clic en cualquier nodo del flujo para inspeccionar las tecnologías y la lógica aplicada en esa fase del pipeline.
+                    </p>
+                </div>
+                
+                {/* Simulator Trigger Button */}
+                <button
+                    onClick={isSimulating ? stopSimulation : startSimulation}
+                    className={cn(
+                        "px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2 border w-fit shrink-0",
+                        isSimulating
+                            ? "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30"
+                            : "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 shadow-[0_0_15px_rgba(234,88,12,0.15)]"
+                    )}
+                >
+                    {isSimulating ? (
+                        <>
+                            <Square size={12} fill="currentColor" />
+                            Detener Test
+                        </>
+                    ) : (
+                        <>
+                            <Play size={12} fill="currentColor" />
+                            Simular Integración
+                        </>
+                    )}
+                </button>
+            </div>
+
+            {/* Diagram Container */}
+            <div className="bg-black/45 border border-white/5 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center md:items-stretch gap-4 md:gap-0 relative overflow-hidden">
+                {nodes.map((node, idx) => {
+                    const NodeIcon = node.icon;
+                    const isSimulatingThisNode = isSimulating && simulationStep === idx;
+                    const isSelected = selectedNode === node.id;
+
+                    return (
+                        <div key={node.id} className="flex flex-col md:flex-row items-center flex-1">
+                            {/* Node Card */}
+                            <motion.div
+                                whileHover={isSimulating ? {} : { scale: 1.03 }}
+                                onClick={() => {
+                                    if (!isSimulating) {
+                                        setSelectedNode(node.id);
+                                    }
+                                }}
+                                className={cn(
+                                    "p-4 rounded-xl border flex flex-col items-center text-center cursor-pointer min-w-[150px] max-w-[180px] z-10 transition-all select-none mx-auto",
+                                    isSimulating
+                                        ? isSimulatingThisNode
+                                            ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(234,88,12,0.4)] scale-105"
+                                            : "bg-white/5 border-white/5 opacity-40 cursor-not-allowed"
+                                        : isSelected
+                                            ? "bg-primary/10 border-primary shadow-[0_0_15px_rgba(234,88,12,0.25)]"
+                                            : "bg-white/5 border-white/10 hover:border-white/30 text-zinc-300"
+                                )}
+                            >
+                                <div className={cn(
+                                    "w-10 h-10 rounded-lg flex items-center justify-center mb-3 border",
+                                    isSimulating
+                                        ? isSimulatingThisNode
+                                            ? "bg-primary/20 border-primary text-primary"
+                                            : "bg-white/5 border-white/5 text-zinc-600"
+                                        : isSelected 
+                                            ? "bg-primary/20 border-primary text-primary" 
+                                            : "bg-white/5 border-white/10 text-zinc-400"
+                                )}>
+                                    <NodeIcon size={20} />
+                                </div>
+                                <span className="text-xs font-bold text-white line-clamp-1">{node.title}</span>
+                                <span className="text-[10px] text-zinc-500 font-mono mt-0.5">{node.subtitle}</span>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/5 text-zinc-400 font-mono mt-2">{node.tech}</span>
+                            </motion.div>
+
+                            {/* Connector Line (if not last) */}
+                            {idx < nodes.length - 1 && (
+                                <div className="flex flex-1 items-center justify-center w-full md:w-auto">
+                                    {/* Desktop Connector */}
+                                    <div className="hidden md:flex flex-1 h-0.5 bg-zinc-800 self-center mx-2 relative min-w-[30px] w-full">
+                                        <motion.div
+                                            animate={{ left: ["0%", "100%"] }}
+                                            transition={
+                                                isSimulatingThisNode
+                                                    ? { duration: 0.8, repeat: Infinity, ease: "linear" }
+                                                    : { duration: 3, repeat: Infinity, ease: "linear" }
+                                            }
+                                            className={cn(
+                                                "absolute w-2 h-2 rounded-full -translate-y-1/2 shadow-[0_0_8px_currentColor]",
+                                                isSimulatingThisNode
+                                                    ? "bg-primary text-primary"
+                                                    : "bg-zinc-600 text-zinc-600"
+                                            )}
+                                        />
+                                    </div>
+                                    
+                                    {/* Mobile Connector */}
+                                    <div className="md:hidden w-0.5 h-8 bg-zinc-800 relative my-2">
+                                        <motion.div
+                                            animate={{ top: ["0%", "100%"] }}
+                                            transition={
+                                                isSimulatingThisNode
+                                                    ? { duration: 0.6, repeat: Infinity, ease: "linear" }
+                                                    : { duration: 2, repeat: Infinity, ease: "linear" }
+                                            }
+                                            className={cn(
+                                                "absolute w-2 h-2 rounded-full -translate-x-1/2 shadow-[0_0_8px_currentColor]",
+                                                isSimulatingThisNode
+                                                    ? "bg-primary text-primary"
+                                                    : "bg-zinc-600 text-zinc-600"
+                                            )}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Terminal Console */}
+            <AnimatePresence>
+                {(isSimulating || simulatedLogs.length > 0) && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div ref={terminalContainerRef} className="bg-[#08080c] border border-white/10 rounded-xl p-4 font-mono text-[11px] text-zinc-300 shadow-inner h-40 overflow-y-auto flex flex-col gap-1.5 custom-scrollbar relative">
+                            <div className="sticky top-0 bg-[#08080c]/90 backdrop-blur-md flex justify-between items-center text-[9px] text-zinc-500 border-b border-white/5 pb-1.5 mb-1.5 uppercase tracking-wider font-bold z-20">
+                                <span className="flex items-center gap-1.5">
+                                    <Terminal size={12} className="text-primary" />
+                                    Consola de Integración SAP BTP
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <span className={cn("w-1.5 h-1.5 rounded-full", isSimulating ? "bg-amber-500 animate-pulse" : "bg-green-500")} />
+                                    {isSimulating ? "RUNNING" : "COMPLETED"}
+                                </span>
+                            </div>
+                            <div className="space-y-1.5 pt-1">
+                                {simulatedLogs.map((log, index) => {
+                                    let color = "text-zinc-400";
+                                    if (log.includes("SUCCESS") || log.includes("¡Integración") || log.includes("¡Flujo") || log.includes("¡Escenario")) {
+                                        color = "text-emerald-400 font-bold";
+                                    } else if (log.includes("INFO") || log.includes("RECEIVE") || log.includes("CONNECT") || log.includes("SEND")) {
+                                        color = "text-blue-400";
+                                    } else if (log.includes("EVENT") || log.includes("DATA") || log.includes("ERP")) {
+                                        color = "text-purple-400";
+                                    } else if (log.includes("PROCESS") || log.includes("MIGRATION") || log.includes("Groovy")) {
+                                        color = "text-amber-400";
+                                    } else if (log.includes("DB") || log.includes("HANA") || log.includes("UPLOAD")) {
+                                        color = "text-cyan-400";
+                                    } else if (log.includes("SEC") || log.includes("DECRYPT") || log.includes("TUNNEL")) {
+                                        color = "text-pink-400";
+                                    }
+
+                                    return (
+                                        <div key={index} className={cn("leading-relaxed", color)}>
+                                            {log}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Selected Node Details Box */}
+            <AnimatePresence mode="wait">
+                {selectedNode && (
+                    <motion.div
+                        key={selectedNode}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-2"
+                    >
+                        {(() => {
+                            const activeNode = nodes.find(n => n.id === selectedNode);
+                            if (!activeNode) return null;
+                            return (
+                                <>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-mono uppercase tracking-wider text-primary">{activeNode.subtitle}</span>
+                                        <span className="text-zinc-600">|</span>
+                                        <span className="text-xs font-bold text-zinc-400 font-mono bg-white/5 px-2 py-0.5 rounded border border-white/5">{activeNode.tech}</span>
+                                    </div>
+                                    <h5 className="font-bold text-white text-base">{activeNode.title}</h5>
+                                    <p className="text-zinc-400 text-xs leading-relaxed font-sans">{activeNode.description}</p>
+                                </>
+                            );
+                        })()}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
