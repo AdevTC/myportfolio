@@ -123,7 +123,7 @@ export default function Hero() {
                         className="relative w-72 h-72 md:w-96 md:h-96 lg:w-[420px] lg:h-[420px] rounded-full border p-2.5 backdrop-blur-xl shadow-2xl flex items-center justify-center overflow-hidden transition-all duration-300 hover:border-primary/50 cursor-pointer"
                     >
                         <img
-                            src="/brand/FOTILLO.png"
+                            src="/brand/FOTONUEVA.png"
                             alt="Adrián Tomás Cerdá"
                             className="w-full h-full object-cover rounded-full transition-transform duration-500 group-hover/img:scale-105"
                         />
