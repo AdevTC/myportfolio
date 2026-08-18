@@ -38,6 +38,53 @@ interface MilestoneSpec {
     isNext?: boolean;
 }
 
+const COMPANY_THEMES: Record<string, {
+    borderHover: string;
+    borderDefault: string;
+    gradientBg: string;
+    blob1: string;
+    blob2: string;
+    accentText: string;
+    progressBar: string;
+}> = {
+    alsea: {
+        borderHover: "hover:border-blue-500/60 hover:shadow-[0_0_35px_rgba(37,99,235,0.25)]",
+        borderDefault: "border-blue-500/20",
+        gradientBg: "from-blue-950/40 via-[#0d1c3a]/30 to-indigo-950/40",
+        blob1: "bg-blue-600/25",
+        blob2: "bg-indigo-500/20",
+        accentText: "group-hover:text-blue-400",
+        progressBar: "from-blue-500 to-indigo-400"
+    },
+    sapas: {
+        borderHover: "hover:border-white/60 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)]",
+        borderDefault: "border-white/20",
+        gradientBg: "from-neutral-900/60 via-[#18181b]/50 to-zinc-900/60",
+        blob1: "bg-white/15",
+        blob2: "bg-slate-200/10",
+        accentText: "group-hover:text-white",
+        progressBar: "from-white to-slate-400"
+    },
+    timestamp: {
+        borderHover: "hover:border-red-500/60 hover:shadow-[0_0_40px_rgba(239,68,68,0.25)]",
+        borderDefault: "border-red-500/20",
+        gradientBg: "from-red-950/50 via-[#2a0e14]/40 to-rose-950/40",
+        blob1: "bg-red-600/25",
+        blob2: "bg-rose-500/20",
+        accentText: "group-hover:text-red-400",
+        progressBar: "from-red-500 to-rose-500"
+    },
+    inetum: {
+        borderHover: "hover:border-teal-500/60 hover:shadow-[0_0_35px_rgba(13,148,136,0.25)]",
+        borderDefault: "border-teal-500/20",
+        gradientBg: "from-teal-950/40 via-[#0a2324]/30 to-cyan-950/40",
+        blob1: "bg-teal-500/25",
+        blob2: "bg-emerald-500/20",
+        accentText: "group-hover:text-teal-400",
+        progressBar: "from-teal-500 to-emerald-400"
+    }
+};
+
 // Logic to determine a milestone's tier and label based on number of days
 const getMilestoneInfo = (days: number): { isMilestone: boolean; label: string; icon: any; tier: Tier } | null => {
     // Epics: Years and 500-day intervals (excluding 0)
@@ -267,11 +314,18 @@ export default function ExperienceMilestones({ experiences }: ExperienceMileston
                         ${isNextContainer ? 'border-blue-400/30 bg-blue-400/5' : ''}
                     `}>
                         <div className="flex items-center gap-4">
-                            {view === 'general' && ms.logo && (
-                                <div className="hidden md:flex w-10 h-10 rounded-lg bg-white p-1.5 shrink-0 items-center justify-center">
-                                    <img src={ms.logo} alt={ms.company || 'Company'} className="w-full h-full object-contain" />
-                                </div>
-                            )}
+                            {view === 'general' && ms.logo && (() => {
+                                const isFullBleed = ms.company?.toLowerCase().includes('alsea') || ms.company?.toLowerCase().includes('timestamp') || ms.company?.toLowerCase().includes('inetum');
+                                return (
+                                    <div className={`hidden md:flex w-10 h-10 rounded-lg shrink-0 items-center justify-center overflow-hidden ${isFullBleed ? 'p-0' : 'bg-white p-1.5'}`}>
+                                        <img
+                                            src={ms.logo}
+                                            alt={ms.company || 'Company'}
+                                            className={`w-full h-full ${isFullBleed ? 'object-cover scale-105' : 'object-contain'}`}
+                                        />
+                                    </div>
+                                );
+                            })()}
                             <div>
                                 <h4 className={`text-base md:text-lg font-bold flex flex-wrap items-center gap-2 ${ms.achieved ? 'text-white' : isNextContainer ? 'text-blue-400' : 'text-gray-400'}`}>
                                     {ms.isNext && !ms.achieved ? 'Próximo Hito: ' : ''}{ms.label}
@@ -364,26 +418,76 @@ export default function ExperienceMilestones({ experiences }: ExperienceMileston
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-6"
                 >
-                    {/* Map experiences dynamically to show unexpanded ones as cards */}
                     {experiences.map((exp) => {
                         const msList = companyMilestones[exp.id] || [];
                         const achievedCount = msList.filter((m: any) => m.achieved).length;
                         const isExpanded = expandedCompany === exp.id;
+                        const isFullBleed = exp.id === 'alsea' || exp.id === 'timestamp' || exp.id === 'inetum';
+                        const theme = COMPANY_THEMES[exp.id] || COMPANY_THEMES.sapas;
 
                         return (
-                            <div key={exp.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+                            <div
+                                key={exp.id}
+                                className={`relative overflow-hidden bg-white/[0.03] border border-white/10 rounded-2xl shadow-xl transition-all duration-500 group backdrop-blur-xl ${theme.borderHover} ${isExpanded ? 'ring-1 ' + theme.borderDefault : ''}`}
+                            >
+                                {/* Animated Ambient Color Mesh Blobs */}
+                                <motion.div
+                                    animate={{
+                                        x: [0, 25, -20, 0],
+                                        y: [0, -20, 15, 0],
+                                        scale: [1, 1.15, 0.95, 1],
+                                        opacity: [0.2, 0.45, 0.25, 0.2]
+                                    }}
+                                    transition={{
+                                        duration: 8,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                    className={`absolute -top-20 -left-20 w-64 h-64 rounded-full blur-3xl pointer-events-none transition-opacity ${theme.blob1}`}
+                                />
+                                <motion.div
+                                    animate={{
+                                        x: [0, -20, 25, 0],
+                                        y: [0, 20, -15, 0],
+                                        scale: [1, 1.2, 0.9, 1],
+                                        opacity: [0.15, 0.4, 0.2, 0.15]
+                                    }}
+                                    transition={{
+                                        duration: 10,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                        delay: 1
+                                    }}
+                                    className={`absolute -bottom-20 -right-20 w-64 h-64 rounded-full blur-3xl pointer-events-none transition-opacity ${theme.blob2}`}
+                                />
+                                <motion.div
+                                    animate={{
+                                        opacity: [0.15, 0.3, 0.15]
+                                    }}
+                                    transition={{
+                                        duration: 7,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                    className={`absolute inset-0 bg-gradient-to-br pointer-events-none ${theme.gradientBg}`}
+                                />
+
                                 {/* Interfaz Empresa */}
                                 <div
-                                    className="p-4 md:p-6 cursor-pointer flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-white/5 transition-colors"
+                                    className="relative z-10 p-4 md:p-6 cursor-pointer flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-white/5 transition-colors"
                                     onClick={() => setExpandedCompany(isExpanded ? null : exp.id)}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-white rounded-lg p-1.5 shrink-0 flex items-center justify-center">
-                                            <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
+                                        <div className={`w-12 h-12 rounded-lg shrink-0 flex items-center justify-center overflow-hidden shadow-lg ring-1 ring-white/10 ${isFullBleed ? 'p-0' : 'bg-white p-1.5'}`}>
+                                            <img
+                                                src={exp.logo}
+                                                alt={exp.company}
+                                                className={`w-full h-full ${isFullBleed ? 'object-cover scale-105' : 'object-contain'}`}
+                                            />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-white transition-colors group-hover:text-primary">{exp.company}</h3>
-                                            <p className="text-sm text-primary">{exp.role}</p>
+                                            <h3 className={`text-xl font-bold text-white transition-colors ${theme.accentText}`}>{exp.company}</h3>
+                                            <p className="text-sm text-muted-foreground">{exp.role}</p>
                                         </div>
                                     </div>
 
@@ -397,12 +501,12 @@ export default function ExperienceMilestones({ experiences }: ExperienceMileston
                                                 <motion.div
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${(achievedCount / msList.length) * 100}%` }}
-                                                    className="h-full bg-gradient-to-r from-primary to-orange-400"
+                                                    className={`h-full bg-gradient-to-r ${theme.progressBar}`}
                                                 />
                                             </div>
                                         </div>
                                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0">
-                                            <ChevronDown className={`text-muted-foreground transition-transform duration-300 ${isExpanded ? 'rotate-180 text-primary' : ''}`} size={16} />
+                                            <ChevronDown className={`text-muted-foreground transition-transform duration-300 ${isExpanded ? 'rotate-180 text-white' : ''}`} size={16} />
                                         </div>
                                     </div>
                                 </div>

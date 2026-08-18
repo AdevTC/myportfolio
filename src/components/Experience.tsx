@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Clock, TrendingUp, Calendar, Users, Briefcase, 
 import { createPortal } from "react-dom";
 import Counter from "./ui/Counter";
 import ExperienceMilestones from "./ExperienceMilestones";
+import ExperienceCalendar from "./ExperienceCalendar";
 import { cn } from "@/lib/utils";
 
 // --- Types ---
@@ -24,19 +25,87 @@ interface ExperienceItem {
     teamSize: number;
     logo: string;
     workMode: string;
-    url: string; // New field
-    kpis: { label: string; value: string; icon: string }[]; // New field
+    url: string;
+    kpis: { label: string; value: string; icon: string }[];
 }
 
 // --- Constants ---
 const S_INETUM_START = Number(process.env.NEXT_PUBLIC_SALARY_INETUM_START) || 19000;
 const S_INETUM_END = Number(process.env.NEXT_PUBLIC_SALARY_INETUM_END) || 20000;
 const S_TIMESTAMP = Number(process.env.NEXT_PUBLIC_SALARY_TIMESTAMP) || 26000;
-const S_SAPAS = Number(process.env.NEXT_PUBLIC_SALARY_SAPAS) || 33000;
+const S_SAPAS = Number(process.env.NEXT_PUBLIC_SALARY_SAPAS) || 32500;
+const S_ALSEA = Number(process.env.NEXT_PUBLIC_SALARY_ALSEA) || 47000;
 
 const calculateGrowth = (current: number, previous: number) => {
     if (!previous) return 0;
     return ((current / previous) - 1) * 100;
+};
+
+const COMPANY_THEMES: Record<string, {
+    borderHover: string;
+    borderDefault: string;
+    gradientBg: string;
+    blob1: string;
+    blob2: string;
+    accentText: string;
+    glowShadow: string;
+    badgeBg: string;
+    iconClockColor: string;
+    iconTeamColor: string;
+    iconGrowthColor: string;
+}> = {
+    alsea: {
+        borderHover: "hover:border-blue-500/60 hover:shadow-[0_0_40px_rgba(37,99,235,0.25)]",
+        borderDefault: "border-blue-500/20",
+        gradientBg: "from-blue-950/50 via-[#0d1c3a]/40 to-indigo-950/40",
+        blob1: "bg-blue-600/25",
+        blob2: "bg-indigo-500/20",
+        accentText: "text-blue-400 group-hover:text-blue-300",
+        glowShadow: "rgba(37,99,235,0.25)",
+        badgeBg: "bg-blue-500/15 text-blue-300 border-blue-500/30",
+        iconClockColor: "text-blue-400",
+        iconTeamColor: "text-indigo-400",
+        iconGrowthColor: "text-sky-400"
+    },
+    sapas: {
+        borderHover: "hover:border-white/60 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)]",
+        borderDefault: "border-white/20",
+        gradientBg: "from-neutral-900/60 via-[#18181b]/50 to-zinc-900/60",
+        blob1: "bg-white/15",
+        blob2: "bg-slate-200/10",
+        accentText: "text-white group-hover:text-gray-200",
+        glowShadow: "rgba(255,255,255,0.2)",
+        badgeBg: "bg-white/10 text-white border-white/20",
+        iconClockColor: "text-gray-300",
+        iconTeamColor: "text-gray-200",
+        iconGrowthColor: "text-emerald-400"
+    },
+    timestamp: {
+        borderHover: "hover:border-red-500/60 hover:shadow-[0_0_40px_rgba(239,68,68,0.25)]",
+        borderDefault: "border-red-500/20",
+        gradientBg: "from-red-950/50 via-[#2a0e14]/40 to-rose-950/40",
+        blob1: "bg-red-600/25",
+        blob2: "bg-rose-500/20",
+        accentText: "text-red-400 group-hover:text-red-300",
+        glowShadow: "rgba(239,68,68,0.25)",
+        badgeBg: "bg-red-500/15 text-red-300 border-red-500/30",
+        iconClockColor: "text-red-400",
+        iconTeamColor: "text-rose-400",
+        iconGrowthColor: "text-emerald-400"
+    },
+    inetum: {
+        borderHover: "hover:border-teal-500/60 hover:shadow-[0_0_40px_rgba(13,148,136,0.25)]",
+        borderDefault: "border-teal-500/20",
+        gradientBg: "from-teal-950/50 via-[#0a2324]/40 to-cyan-950/40",
+        blob1: "bg-teal-500/25",
+        blob2: "bg-emerald-500/20",
+        accentText: "text-teal-400 group-hover:text-teal-300",
+        glowShadow: "rgba(13,148,136,0.25)",
+        badgeBg: "bg-teal-500/15 text-teal-300 border-teal-500/30",
+        iconClockColor: "text-teal-400",
+        iconTeamColor: "text-emerald-400",
+        iconGrowthColor: "text-cyan-400"
+    }
 };
 
 // --- Helpers ---
@@ -62,15 +131,47 @@ const getKpiIcon = (iconName: string) => {
 // --- Data ---
 const EXPERIENCES: ExperienceItem[] = [
     {
+        id: "alsea",
+        company: "Alsea",
+        role: "Responsable de BTP & Integraciones",
+        period: "Madrid, España | Septiembre 2026 - Actualidad",
+        startDate: "2026-09-14T00:00:00",
+        description: "Liderazgo técnico del área de SAP BTP en cliente final, soporte y mentoring a compañeros y migraciones de sistemas Oracle.",
+        tech: [
+            "SAP BTP", "Integration Suite", "SAP CPI", "Oracle DB", "Migración de datos", "SAP CAP", "Node.js", "Groovy", "OData", "REST/SOAP", "Arquitectura Cloud", "Clean Core", "Liderazgo técnico", "Soporte y Mentoring", "Gestión de APIs", "Seguridad Cloud"
+        ],
+        growthVsPrevious: calculateGrowth(S_ALSEA, S_SAPAS),
+        growthTotal: calculateGrowth(S_ALSEA, S_INETUM_START),
+        teamSize: 4,
+        logo: "/logos/alsea.png",
+        workMode: "Híbrido",
+        url: "https://www.alsea.net/",
+        achievements: [
+            { title: "Responsable de Área BTP", desc: "Liderazgo técnico y referente de la plataforma SAP BTP en cliente final internacional." },
+            { title: "Migración desde Oracle", desc: "Diseño, extracción y orquestación de flujos de migración desde bases de datos y ERPs Oracle a SAP BTP." },
+            { title: "Soporte y Mentoring", desc: "Acompañamiento técnico, resolución de dudas y apoyo continuo a un equipo de 4 profesionales." },
+            { title: "Entorno Cliente Final", desc: "Alineación directa con los objetivos de negocio y optimización de flujos operativos sin intermediarios." },
+            { title: "Arquitectura Clean Core", desc: "Diseño de microservicios CAP y servicios OData V4 desacoplados y escalables." },
+            { title: "Gobernanza e iFlows", desc: "Estandarización de pipelines de integración, políticas de seguridad y monitorización centralizada." }
+        ],
+        kpis: [
+            { label: "Rol & Liderazgo", value: "Lead BTP & Mentor", icon: "shield" },
+            { label: "Equipo Técnico", value: "4 personas", icon: "users" },
+            { label: "Entorno de Trabajo", value: "Cliente Final", icon: "briefcase" },
+            { label: "Foco de Migración", value: "Oracle a BTP", icon: "database" }
+        ]
+    },
+    {
         id: "sapas",
         company: "Sapas Consulting",
         role: "SAP Cloud Integrations & BTP Developer",
-        period: "Barcelona, España | Julio 2025 - Actualidad",
-        startDate: "2025-07-07T09:00:00",
+        period: "Barcelona, España | Julio 2025 - Septiembre 2026",
+        startDate: "2025-07-07T00:00:00",
+        endDate: "2026-09-11T23:59:59.999",
         description: "Diseño y desarrollo de integraciones clínicas (HL7 & SAP CPI) y arquitecturas Cloud-Native sobre SAP BTP.",
         tech: [
-            "HL7", "SAP CAP", "CPI", "SAP BTP", "CDS", "CI/CD", "GitHub", "SAP HANA", "SAP BAS", // Sapas specific
-            "Integration Suite", "SuccessFactors", "Node.js", "Groovy", "OData", "JSON", "SOAP", "XSD", "Java", "JWT", "OAuth", "Postman", "Insomnia", "Transformación de datos", "Validación de datos", "Error Handling" // Inherited from Timestamp/Core
+            "HL7", "SAP CAP", "CPI", "SAP BTP", "CDS", "CI/CD", "GitHub", "SAP HANA", "SAP BAS",
+            "Integration Suite", "SuccessFactors", "Node.js", "Groovy", "OData", "JSON", "SOAP", "XSD", "Java", "JWT", "OAuth", "Postman", "Insomnia", "Transformación de datos", "Validación de datos", "Error Handling"
         ],
         growthVsPrevious: calculateGrowth(S_SAPAS, S_TIMESTAMP),
         growthTotal: calculateGrowth(S_SAPAS, S_INETUM_START),
@@ -100,8 +201,8 @@ const EXPERIENCES: ExperienceItem[] = [
         company: "Timestamp",
         role: "Consultor de Integración SAP",
         period: "Madrid, España | Mayo 2025 - Julio 2025",
-        startDate: "2025-05-12T09:00:00",
-        endDate: "2025-07-04T15:30:00",
+        startDate: "2025-05-12T00:00:00",
+        endDate: "2025-07-04T23:59:59.999",
         description: "Desarrollo avanzado de integraciones para RRHH y Finanzas con Groovy y SAP Integration Suite.",
         tech: [
             "Integration Suite", "SuccessFactors", "Node.js", "Groovy", "OData", "JSON", "SOAP", "SAP BTP", "Productos SAP", "XSD", "Definición de esquemas XML", "Java", "JWT", "OAuth", "Postman", "Insomnia", "Notepad++", "SoapUI", "Picklists", "CSV", "Base64", "Transformación de datos", "Validación de datos", "Error Handling", "Mapping"
@@ -109,7 +210,7 @@ const EXPERIENCES: ExperienceItem[] = [
         growthVsPrevious: calculateGrowth(S_TIMESTAMP, S_INETUM_END),
         growthTotal: calculateGrowth(S_TIMESTAMP, S_INETUM_START),
         teamSize: 6,
-        logo: "/logos/timestamp.png",
+        logo: "/logos/timestampv2.png",
         workMode: "Híbrido",
         url: "https://www.timestampgroup.com/es",
         achievements: [
@@ -132,8 +233,8 @@ const EXPERIENCES: ExperienceItem[] = [
         company: "Inetum",
         role: "Consultor Junior de Integración SAP",
         period: "Madrid, España | Julio 2023 - Mayo 2025",
-        startDate: "2023-09-18T08:00:00",
-        endDate: "2025-05-09T14:30:00",
+        startDate: "2023-09-18T00:00:00",
+        endDate: "2025-05-09T23:59:59.999",
         description: "Diseño, desarrollo y mantenimiento de soluciones de integración con SAP PI/PO y CPI.",
         tech: [
             "Base64", "CSV", "Definición de esquemas XML", "Desarrollo de software", "Groovy", "HTML", "Integration Suite", "JSON", "Mapping", "Microsoft Excel", "Notepad++", "Postman", "Productos SAP", "SAP BTP", "SAP NetWeaver", "SOAP", "SoapUI", "Trabajo en equipo", "XML", "XSD"
@@ -141,7 +242,7 @@ const EXPERIENCES: ExperienceItem[] = [
         growthVsPrevious: 0,
         growthTotal: calculateGrowth(S_INETUM_END, S_INETUM_START),
         teamSize: 14,
-        logo: "/logos/inetum.png",
+        logo: "/logos/inetumv2.svg",
         workMode: "Híbrido",
         url: "https://www.inetum.com/es",
         achievements: [
@@ -165,9 +266,12 @@ const EXPERIENCES: ExperienceItem[] = [
 // --- Helpers ---
 const calculateDiffMs = (start: string, end?: string) => {
     const startDate = new Date(start);
-    const endDate = end ? new Date(end) : new Date();
-    return Math.abs(endDate.getTime() - startDate.getTime());
-}
+    const now = new Date();
+    if (startDate > now) return 0;
+    const endDate = end ? new Date(end) : now;
+    const effectiveEnd = endDate > now ? now : endDate;
+    return Math.max(0, effectiveEnd.getTime() - startDate.getTime());
+};
 
 type TimeUnit =
     | 'Seg.' | 'Min.' | 'Horas' | 'Días' | 'Semanas' | 'Quincenas'
@@ -189,7 +293,7 @@ const convertTime = (ms: number, unit: TimeUnit) => {
         case 'Días': return days;
         case 'Semanas': return days / 7;
         case 'Quincenas': return days / 15;
-        case 'Meses': return days / 30.4375; // More precise average
+        case 'Meses': return days / 30.4375;
         case 'Trimestres': return days / 91.3125;
         case 'Cuatrimestres': return days / 121.75;
         case 'Semestres': return days / 182.625;
@@ -231,19 +335,27 @@ const getDecimals = (unit: TimeUnit) => {
 
 // --- Component ---
 export default function Experience() {
-    const [viewMode, setViewMode] = useState<'timeline' | 'comparison' | 'analytics' | 'milestones'>('timeline');
+    const [viewMode, setViewMode] = useState<'timeline' | 'comparison' | 'analytics' | 'milestones' | 'calendar'>('timeline');
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
     const [activeCardTab, setActiveCardTab] = useState<'details' | 'architecture'>('details');
-    const [currentMsSapas, setCurrentMsSapas] = useState(0);
     const [timeUnit, setTimeUnit] = useState<TimeUnit>('Días');
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [isCompaniesDropdownOpen, setCompaniesDropdownOpen] = useState(false);
     const [highlightedId, setHighlightedId] = useState<string | null>(null);
     const [salaryMetric, setSalaryMetric] = useState<'total' | 'previous'>('total');
     const [hoveredDistIndex, setHoveredDistIndex] = useState<number | null>(null);
+    const [tick, setTick] = useState(0);
 
     const companiesDropdownRef = useRef<HTMLDivElement>(null);
     const timeDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Live tick for dynamic time updates
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTick(t => t + 1);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Handle outside clicks to close dropdowns
     useEffect(() => {
@@ -264,17 +376,14 @@ export default function Experience() {
 
     const handleCompanyClick = (expId: string) => {
         setCompaniesDropdownOpen(false);
-        // Ensure we are in timeline view to see the list
         setViewMode('timeline');
         setActiveCardTab('details');
 
-        // Small delay to allow view switch and render
         setTimeout(() => {
             const element = document.getElementById(`exp-${expId}`);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setHighlightedId(expId);
-                // Remove highlight after 3 seconds
                 setTimeout(() => setHighlightedId(null), 3000);
             }
         }, 100);
@@ -287,26 +396,19 @@ export default function Experience() {
         'Décadas', 'Siglos', 'Milenios'
     ];
 
-    // Live counter for Sapas
-    useEffect(() => {
-        const updateMs = () => {
-            setCurrentMsSapas(calculateDiffMs(EXPERIENCES[0].startDate));
-        };
-        updateMs();
-        const interval = setInterval(updateMs, 1000); // Update every second for dynamic feel
-        return () => clearInterval(interval);
-    }, []);
-
     const toggleExpand = (index: number) => {
         setExpandedIndex(expandedIndex === index ? null : index);
         setActiveCardTab('details');
     };
 
+    const getExpMs = (exp: ExperienceItem) => {
+        return calculateDiffMs(exp.startDate, exp.endDate);
+    };
+
     // Global Stats
     const totalCompanies = EXPERIENCES.length;
     const totalMs = EXPERIENCES.reduce((acc, exp) => {
-        if (exp.id === 'sapas') return acc + currentMsSapas;
-        return acc + calculateDiffMs(exp.startDate, exp.endDate);
+        return acc + getExpMs(exp);
     }, 0);
 
     return (
@@ -349,18 +451,31 @@ export default function Experience() {
                                                 className="hidden md:block absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl p-2 z-50 min-w-[220px] backdrop-blur-xl"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                {EXPERIENCES.map((exp) => (
-                                                    <div
-                                                        key={exp.id}
-                                                        onClick={() => handleCompanyClick(exp.id)}
-                                                        className="px-4 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3 cursor-pointer"
-                                                    >
-                                                        <div className="w-8 h-8 rounded-md bg-white p-1 flex items-center justify-center shrink-0">
-                                                            <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
+                                                {EXPERIENCES.map((exp) => {
+                                                    const isFullBleed = exp.id === 'alsea' || exp.id === 'timestamp' || exp.id === 'inetum';
+                                                    return (
+                                                        <div
+                                                            key={exp.id}
+                                                            onClick={() => handleCompanyClick(exp.id)}
+                                                            className="px-4 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3 cursor-pointer"
+                                                        >
+                                                            <div className={cn(
+                                                                "w-8 h-8 rounded-md shrink-0 flex items-center justify-center overflow-hidden",
+                                                                isFullBleed ? "p-0" : "bg-white p-1"
+                                                            )}>
+                                                                <img
+                                                                    src={exp.logo}
+                                                                    alt={exp.company}
+                                                                    className={cn(
+                                                                        "w-full h-full",
+                                                                        isFullBleed ? "object-cover scale-105" : "object-contain"
+                                                                    )}
+                                                                />
+                                                            </div>
+                                                            <span className="text-sm font-medium text-gray-200">{exp.company}</span>
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-200">{exp.company}</span>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </motion.div>
 
                                             {/* Mobile Dropdown (Portal) */}
@@ -383,18 +498,31 @@ export default function Experience() {
                                                         className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl p-2 z-10 max-h-[70vh] overflow-y-auto custom-scrollbar"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
-                                                        {EXPERIENCES.map((exp) => (
-                                                            <div
-                                                                key={`mobile-${exp.id}`}
-                                                                onClick={() => handleCompanyClick(exp.id)}
-                                                                className="px-4 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3 border-b border-white/5 last:border-0 active:bg-white/10"
-                                                            >
-                                                                <div className="w-10 h-10 rounded-md bg-white p-1 flex items-center justify-center shrink-0">
-                                                                    <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
+                                                        {EXPERIENCES.map((exp) => {
+                                                            const isFullBleed = exp.id === 'alsea' || exp.id === 'timestamp' || exp.id === 'inetum';
+                                                            return (
+                                                                <div
+                                                                    key={`mobile-${exp.id}`}
+                                                                    onClick={() => handleCompanyClick(exp.id)}
+                                                                    className="px-4 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3 border-b border-white/5 last:border-0 active:bg-white/10"
+                                                                >
+                                                                    <div className={cn(
+                                                                        "w-10 h-10 rounded-md shrink-0 flex items-center justify-center overflow-hidden",
+                                                                        isFullBleed ? "p-0" : "bg-white p-1"
+                                                                    )}>
+                                                                        <img
+                                                                            src={exp.logo}
+                                                                            alt={exp.company}
+                                                                            className={cn(
+                                                                                "w-full h-full",
+                                                                                isFullBleed ? "object-cover scale-105" : "object-contain"
+                                                                            )}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-base font-bold text-white">{exp.company}</span>
                                                                 </div>
-                                                                <span className="text-base font-bold text-white">{exp.company}</span>
-                                                            </div>
-                                                        ))}
+                                                            );
+                                                        })}
                                                     </motion.div>
                                                 </div>,
                                                 document.body
@@ -501,12 +629,12 @@ export default function Experience() {
                         </div>
                     </div>
 
-                    {/* View Toggle (Pill Style Reverted) */}
+                    {/* View Toggle */}
                     <div className="flex justify-center px-4 md:px-0 w-full">
-                        <div className="bg-white/5 border border-white/10 p-1 rounded-2xl md:rounded-full grid grid-cols-2 md:flex md:items-center w-full max-w-[340px] md:max-w-none md:w-auto gap-1 md:gap-0">
+                        <div className="bg-white/5 border border-white/10 p-1 rounded-2xl md:rounded-full flex flex-wrap md:flex-nowrap items-center justify-center w-full max-w-[420px] md:max-w-none md:w-auto gap-1">
                             <button
                                 onClick={() => setViewMode('timeline')}
-                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'timeline'
+                                className={`px-3.5 md:px-5 py-2 rounded-xl md:rounded-full text-xs md:text-sm font-medium transition-all text-center ${viewMode === 'timeline'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
@@ -515,7 +643,7 @@ export default function Experience() {
                             </button>
                             <button
                                 onClick={() => setViewMode('comparison')}
-                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'comparison'
+                                className={`px-3.5 md:px-5 py-2 rounded-xl md:rounded-full text-xs md:text-sm font-medium transition-all text-center ${viewMode === 'comparison'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
@@ -524,7 +652,7 @@ export default function Experience() {
                             </button>
                             <button
                                 onClick={() => setViewMode('analytics')}
-                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'analytics'
+                                className={`px-3.5 md:px-5 py-2 rounded-xl md:rounded-full text-xs md:text-sm font-medium transition-all text-center ${viewMode === 'analytics'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
@@ -533,12 +661,21 @@ export default function Experience() {
                             </button>
                             <button
                                 onClick={() => setViewMode('milestones')}
-                                className={`px-4 md:px-6 py-2.5 md:py-2 rounded-xl md:rounded-full text-sm font-medium transition-all text-center ${viewMode === 'milestones'
+                                className={`px-3.5 md:px-5 py-2 rounded-xl md:rounded-full text-xs md:text-sm font-medium transition-all text-center ${viewMode === 'milestones'
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'text-muted-foreground hover:text-white'
                                     }`}
                             >
                                 Hitos
+                            </button>
+                            <button
+                                onClick={() => setViewMode('calendar')}
+                                className={`px-3.5 md:px-5 py-2 rounded-xl md:rounded-full text-xs md:text-sm font-medium transition-all text-center ${viewMode === 'calendar'
+                                    ? 'bg-primary text-white shadow-lg'
+                                    : 'text-muted-foreground hover:text-white'
+                                    }`}
+                            >
+                                Calendario
                             </button>
                         </div>
                     </div>
@@ -548,7 +685,10 @@ export default function Experience() {
                 {viewMode === 'timeline' && (
                     <div className="relative border-l-2 border-white/10 ml-4 md:ml-12 space-y-12 max-w-5xl mx-auto">
                         {EXPERIENCES.map((exp, index) => {
-                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                            const ms = getExpMs(exp);
+                            const isUpcoming = new Date(exp.startDate) > new Date();
+                            const isFullBleed = exp.id === 'alsea' || exp.id === 'timestamp' || exp.id === 'inetum';
+                            const theme = COMPANY_THEMES[exp.id] || COMPANY_THEMES.sapas;
 
                             return (
                                 <div
@@ -557,30 +697,94 @@ export default function Experience() {
                                     className="relative pl-8 md:pl-12 transition-all duration-500"
                                 >
                                     {/* Dot indicator */}
-                                    <div className="absolute -left-[9px] top-4 md:top-8 w-4 h-4 rounded-full bg-primary shadow-lg shadow-primary/50 ring-4 ring-black" />
+                                    <div className={`absolute -left-[9px] top-4 md:top-8 w-4 h-4 rounded-full ${isUpcoming ? 'bg-amber-400 shadow-amber-400/50' : 'bg-primary shadow-primary/50'} shadow-lg ring-4 ring-black`} />
 
                                     <div
-                                        className={`bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-primary/50 ${expandedIndex === index ? 'ring-1 ring-primary/30 bg-white/10' : ''
-                                            } ${highlightedId === exp.id
-                                                ? 'ring-2 ring-primary shadow-[0_0_30px_rgba(234,88,12,0.3)] scale-[1.02] bg-white/10'
-                                                : ''
-                                            }`}
+                                        className={cn(
+                                            "relative overflow-hidden bg-white/[0.03] border border-white/10 rounded-2xl transition-all duration-500 backdrop-blur-xl group",
+                                            theme.borderHover,
+                                            expandedIndex === index ? 'ring-1 ' + theme.borderDefault : '',
+                                            highlightedId === exp.id ? `ring-2 ${theme.borderDefault} scale-[1.01]` : ''
+                                        )}
                                     >
-                                        {/* Header (Always Visible) */}
-                                        <div
-                                            className="p-6 md:p-8 cursor-pointer flex flex-col gap-6"
-                                            onClick={() => toggleExpand(index)}
-                                        >
-                                            <div className="flex flex-col md:flex-row justify-between gap-4">
-                                                {/* Logo & Role */}
-                                                <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 flex-1">
-                                                    <div className="w-16 h-16 rounded-xl bg-white p-2 shrink-0 flex items-center justify-center">
-                                                        <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
-                                                    </div>
-                                                    <div className="space-y-1 w-full md:w-auto">
-                                                        <h3 className="text-2xl font-bold text-white group-hover:text-primary transition-colors">
-                                                            {exp.role}
-                                                        </h3>
+                                        {/* Animated Ambient Color Mesh Blobs */}
+                                        <motion.div
+                                            animate={{
+                                                x: [0, 30, -20, 0],
+                                                y: [0, -25, 15, 0],
+                                                scale: [1, 1.15, 0.95, 1],
+                                                opacity: [0.25, 0.5, 0.3, 0.25]
+                                            }}
+                                            transition={{
+                                                duration: 8,
+                                                repeat: Infinity,
+                                                ease: "easeInOut"
+                                            }}
+                                            className={cn("absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl pointer-events-none transition-opacity", theme.blob1)}
+                                        />
+                                        <motion.div
+                                            animate={{
+                                                x: [0, -20, 30, 0],
+                                                y: [0, 25, -15, 0],
+                                                scale: [1, 1.2, 0.9, 1],
+                                                opacity: [0.2, 0.45, 0.25, 0.2]
+                                            }}
+                                            transition={{
+                                                duration: 10,
+                                                repeat: Infinity,
+                                                ease: "easeInOut",
+                                                delay: 1
+                                            }}
+                                            className={cn("absolute -bottom-24 -right-24 w-72 h-72 rounded-full blur-3xl pointer-events-none transition-opacity", theme.blob2)}
+                                        />
+                                        <motion.div
+                                            animate={{
+                                                opacity: [0.15, 0.3, 0.15]
+                                            }}
+                                            transition={{
+                                                duration: 7,
+                                                repeat: Infinity,
+                                                ease: "easeInOut"
+                                            }}
+                                            className={cn(
+                                                "absolute inset-0 bg-gradient-to-br pointer-events-none",
+                                                theme.gradientBg
+                                            )}
+                                        />
+
+                                        <div className="relative z-10">
+                                            {/* Header (Always Visible) */}
+                                            <div
+                                                className="p-6 md:p-8 cursor-pointer flex flex-col gap-6"
+                                                onClick={() => toggleExpand(index)}
+                                            >
+                                                <div className="flex flex-col md:flex-row justify-between gap-4">
+                                                    {/* Logo & Role */}
+                                                    <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 flex-1">
+                                                        <div className={cn(
+                                                            "w-16 h-16 rounded-xl shrink-0 flex items-center justify-center overflow-hidden shadow-md",
+                                                            isFullBleed ? "p-0" : "bg-white p-2"
+                                                        )}>
+                                                            <img
+                                                                src={exp.logo}
+                                                                alt={exp.company}
+                                                                className={cn(
+                                                                    "w-full h-full",
+                                                                    isFullBleed ? "object-cover scale-105" : "object-contain"
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1 w-full md:w-auto">
+                                                            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap">
+                                                                <h3 className={cn("text-2xl font-bold text-white transition-colors", theme.accentText)}>
+                                                                    {exp.role}
+                                                                </h3>
+                                                            {isUpcoming && (
+                                                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                                                    Próxima Incorporación
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <div className="flex items-center justify-center md:justify-start gap-2">
                                                             <p className="text-xl text-muted-foreground font-medium">
                                                                 {exp.company}
@@ -590,7 +794,7 @@ export default function Experience() {
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="text-muted-foreground hover:text-primary transition-colors p-1"
-                                                                onClick={(e) => e.stopPropagation()} // Prevent card toggle
+                                                                onClick={(e) => e.stopPropagation()}
                                                             >
                                                                 <ExternalLink size={16} />
                                                             </a>
@@ -618,11 +822,15 @@ export default function Experience() {
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] md:text-xs text-muted-foreground uppercase">Tiempo</span>
                                                     <span className="font-bold text-white text-sm md:text-base">
-                                                        <Counter
-                                                            value={convertTime(ms, timeUnit)}
-                                                            suffix={` ${timeUnit}`}
-                                                            decimals={getDecimals(timeUnit)}
-                                                        />
+                                                        {isUpcoming ? (
+                                                            <span className="text-amber-400 text-xs font-mono">14 Sept. 2026</span>
+                                                        ) : (
+                                                            <Counter
+                                                                value={convertTime(ms, timeUnit)}
+                                                                suffix={` ${timeUnit}`}
+                                                                decimals={getDecimals(timeUnit)}
+                                                            />
+                                                        )}
                                                     </span>
                                                 </div>
                                                 <div className="flex flex-col">
@@ -679,7 +887,7 @@ export default function Experience() {
                                                 >
                                                     <div className="p-6 md:p-8 pt-0 border-t border-white/10">
                                                         <p className="text-muted-foreground leading-relaxed md:hidden mb-6 block">
-                                                            {exp.description}
+                                                             {exp.description}
                                                         </p>
 
                                                         {/* Sub-tab selector */}
@@ -757,7 +965,7 @@ export default function Experience() {
                                                                             <div className="pt-8 border-t border-white/5 space-y-4">
                                                                                 <h4 className="text-lg font-bold text-white flex items-center gap-2">
                                                                                     <span className="w-1 h-6 bg-primary rounded-full" />
-                                                                                    Métricas de Impacto y Datos Curiosos
+                                                                                    Métricas de Impacto y Datos Clave
                                                                                 </h4>
                                                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                                     {exp.kpis.map((kpi, idx) => {
@@ -829,6 +1037,7 @@ export default function Experience() {
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
+                                        </div>
                                     </div>
                                 </div>
                             )
@@ -841,83 +1050,157 @@ export default function Experience() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
                     >
                         {EXPERIENCES.map((exp) => {
-                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                            const ms = getExpMs(exp);
+                            const isUpcoming = new Date(exp.startDate) > new Date();
+                            const isFullBleed = exp.id === 'alsea' || exp.id === 'timestamp' || exp.id === 'inetum';
+                            const theme = COMPANY_THEMES[exp.id] || COMPANY_THEMES.sapas;
 
                             return (
-                                <div key={exp.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-6 hover:border-primary/30 transition-colors group">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-lg bg-white p-2 shrink-0 flex items-center justify-center">
-                                            <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">{exp.company}</h3>
-                                                <a
-                                                    href={exp.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-muted-foreground hover:text-primary transition-colors p-1"
-                                                >
-                                                    <ExternalLink size={14} />
-                                                </a>
+                                <div
+                                    key={exp.id}
+                                    className={cn(
+                                        "relative overflow-hidden bg-white/[0.03] border border-white/10 rounded-2xl p-6 flex flex-col gap-6 transition-all duration-500 group backdrop-blur-xl",
+                                        theme.borderHover
+                                    )}
+                                >
+                                    {/* Animated Ambient Color Mesh Blobs */}
+                                    <motion.div
+                                        animate={{
+                                            x: [0, 20, -15, 0],
+                                            y: [0, -20, 10, 0],
+                                            scale: [1, 1.15, 0.95, 1],
+                                            opacity: [0.35, 0.65, 0.4, 0.35]
+                                        }}
+                                        transition={{
+                                            duration: 7,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                        className={cn("absolute -top-16 -left-16 w-48 h-48 rounded-full blur-3xl pointer-events-none transition-opacity", theme.blob1)}
+                                    />
+                                    <motion.div
+                                        animate={{
+                                            x: [0, -15, 20, 0],
+                                            y: [0, 20, -10, 0],
+                                            scale: [1, 1.2, 0.9, 1],
+                                            opacity: [0.25, 0.55, 0.3, 0.25]
+                                        }}
+                                        transition={{
+                                            duration: 9,
+                                            repeat: Infinity,
+                                            ease: "easeInOut",
+                                            delay: 1
+                                        }}
+                                        className={cn("absolute -bottom-16 -right-16 w-48 h-48 rounded-full blur-3xl pointer-events-none transition-opacity", theme.blob2)}
+                                    />
+                                    <motion.div
+                                        animate={{
+                                            opacity: [0.25, 0.45, 0.25]
+                                        }}
+                                        transition={{
+                                            duration: 6,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                        className={cn(
+                                            "absolute inset-0 bg-gradient-to-br pointer-events-none",
+                                            theme.gradientBg
+                                        )}
+                                    />
+
+                                    {/* Card Content (relative z-10 for sharp contrast) */}
+                                    <div className="relative z-10 flex flex-col gap-6 h-full justify-between">
+                                        {/* Header */}
+                                        <div className="flex items-center gap-4">
+                                            <div className={cn(
+                                                "w-12 h-12 rounded-lg shrink-0 flex items-center justify-center overflow-hidden shadow-lg ring-1 ring-white/10",
+                                                isFullBleed ? "p-0" : "bg-white p-2"
+                                            )}>
+                                                <img
+                                                    src={exp.logo}
+                                                    alt={exp.company}
+                                                    className={cn(
+                                                        "w-full h-full",
+                                                        isFullBleed ? "object-cover scale-105" : "object-contain"
+                                                    )}
+                                                />
                                             </div>
-                                            <div className="flex flex-col gap-1">
-                                                <p className="text-xs text-muted-foreground">{exp.role}</p>
-                                                <p className="text-[10px] text-white/50 flex items-center gap-1">
-                                                    <MapPin size={10} /> {exp.workMode}
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className={cn("text-lg font-bold text-white transition-colors", theme.accentText)}>
+                                                        {exp.company}
+                                                    </h3>
+                                                    <a
+                                                        href={exp.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-muted-foreground hover:text-white transition-colors p-1"
+                                                    >
+                                                        <ExternalLink size={14} />
+                                                    </a>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <p className="text-xs text-muted-foreground line-clamp-1">{exp.role}</p>
+                                                    <p className="text-[10px] text-white/50 flex items-center gap-1">
+                                                        <MapPin size={10} /> {exp.workMode}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {/* Duration Stat */}
+                                            <div className="bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/5 group-hover:border-white/10 transition-colors">
+                                                <div className={cn("flex items-center gap-2 mb-2", theme.iconClockColor)}>
+                                                    <Clock size={18} />
+                                                    <span className="text-xs font-bold uppercase tracking-wider">Tiempo Trabajado</span>
+                                                </div>
+                                                <p className="text-2xl font-bold text-white">
+                                                    {isUpcoming ? (
+                                                        <span className="text-amber-400 text-sm font-mono">14 Sept. 2026</span>
+                                                    ) : (
+                                                        <Counter
+                                                            value={convertTime(ms, timeUnit)}
+                                                            suffix={` ${timeUnit}`}
+                                                            decimals={getDecimals(timeUnit)}
+                                                        />
+                                                    )}
                                                 </p>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <div className="space-y-4">
-                                        {/* Duration Stat */}
-                                        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-                                            <div className="flex items-center gap-2 text-primary mb-2">
-                                                <Clock size={18} />
-                                                <span className="text-xs font-bold uppercase tracking-wider">Tiempo Trabajado</span>
-                                            </div>
-                                            <p className="text-3xl font-bold text-white">
-                                                <Counter
-                                                    value={convertTime(ms, timeUnit)}
-                                                    suffix={` ${timeUnit}`}
-                                                    decimals={getDecimals(timeUnit)}
-                                                />
-                                            </p>
-                                        </div>
-
-                                        {/* Team Size */}
-                                        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-                                            <div className="flex items-center gap-2 text-blue-400 mb-2">
-                                                <Users size={18} />
-                                                <span className="text-xs font-bold uppercase tracking-wider">Tamaño Equipo</span>
-                                            </div>
-                                            <p className="text-2xl font-bold text-white">
-                                                {exp.teamSize} <span className="text-sm text-muted-foreground font-normal">personas</span>
-                                            </p>
-                                        </div>
-
-                                        {/* Growth Stats */}
-                                        <div className="bg-black/20 rounded-xl p-4 border border-white/5 space-y-4">
-                                            <div className="flex items-center gap-2 text-green-400 mb-2">
-                                                <TrendingUp size={18} />
-                                                <span className="text-xs font-bold uppercase tracking-wider">Crecimiento (Salario)</span>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <p className="text-[10px] text-muted-foreground mb-1 uppercase">Vs Anterior</p>
-                                                    <div className={`text-xl font-bold ${exp.growthVsPrevious && exp.growthVsPrevious > 0 ? 'text-green-400' : 'text-white'}`}>
-                                                        {exp.growthVsPrevious ? <Counter value={exp.growthVsPrevious} prefix="+" suffix="%" decimals={2} /> : '-'}
-                                                    </div>
+                                            {/* Team Size */}
+                                            <div className="bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/5 group-hover:border-white/10 transition-colors">
+                                                <div className={cn("flex items-center gap-2 mb-2", theme.iconTeamColor)}>
+                                                    <Users size={18} />
+                                                    <span className="text-xs font-bold uppercase tracking-wider">Tamaño Equipo</span>
                                                 </div>
-                                                <div>
-                                                    <p className="text-[10px] text-muted-foreground mb-1 uppercase">Vs Inicio</p>
-                                                    <div className={`text-xl font-bold ${exp.growthTotal && exp.growthTotal > 0 ? 'text-green-400' : 'text-white'}`}>
-                                                        {exp.growthTotal ? <Counter value={exp.growthTotal} prefix="+" suffix="%" decimals={2} /> : '-'}
+                                                <p className="text-2xl font-bold text-white">
+                                                    {exp.teamSize} <span className="text-sm text-muted-foreground font-normal">personas</span>
+                                                </p>
+                                            </div>
+
+                                            {/* Growth Stats */}
+                                            <div className="bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/5 space-y-4 group-hover:border-white/10 transition-colors">
+                                                <div className={cn("flex items-center gap-2 mb-2", theme.iconGrowthColor)}>
+                                                    <TrendingUp size={18} />
+                                                    <span className="text-xs font-bold uppercase tracking-wider">Crecimiento (Salario)</span>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">Vs Anterior</p>
+                                                        <div className={`text-lg font-bold ${exp.growthVsPrevious && exp.growthVsPrevious > 0 ? 'text-green-400' : 'text-white'}`}>
+                                                            {exp.growthVsPrevious ? <Counter value={exp.growthVsPrevious} prefix="+" suffix="%" decimals={2} /> : '-'}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">Vs Inicio</p>
+                                                        <div className={`text-lg font-bold ${exp.growthTotal && exp.growthTotal > 0 ? 'text-green-400' : 'text-white'}`}>
+                                                            {exp.growthTotal ? <Counter value={exp.growthTotal} prefix="+" suffix="%" decimals={2} /> : '-'}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -992,11 +1275,11 @@ export default function Experience() {
                                 <p className="mt-6 text-xs text-muted-foreground text-center">
                                     {salaryMetric === 'total'
                                         ? '*Crecimiento porcentual respecto al salario inicial base.'
-                                        : '*Crecimiento porcentual respecto a la posición inmediatemente anterior.'}
+                                        : '*Crecimiento porcentual respecto a la posición inmediatamente anterior.'}
                                 </p>
                             </div>
 
-                            {/* Time Distribution (Enhanced) */}
+                            {/* Time Distribution */}
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:col-span-2">
                                 <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
                                     <Clock className="text-purple-400" size={20} />
@@ -1007,14 +1290,16 @@ export default function Experience() {
                                     {/* The Bar */}
                                     <div className="flex h-16 rounded-2xl overflow-hidden w-full ring-4 ring-black/40 shadow-2xl relative z-10">
                                         {[...EXPERIENCES].reverse().map((exp, i) => {
-                                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
-                                            const percent = (ms / totalMs) * 100;
+                                            const ms = getExpMs(exp);
+                                            const percent = totalMs > 0 ? (ms / totalMs) * 100 : 0;
 
-                                            // Premium Gradients
                                             const gradientClass =
-                                                exp.id === 'sapas' ? 'bg-gradient-to-b from-primary to-orange-600' :
-                                                    exp.id === 'timestamp' ? 'bg-gradient-to-b from-blue-500 to-indigo-700' :
-                                                        'bg-gradient-to-b from-emerald-400 to-teal-700';
+                                                exp.id === 'alsea' ? 'bg-gradient-to-b from-blue-500 to-indigo-700' :
+                                                exp.id === 'sapas' ? 'bg-gradient-to-b from-white to-slate-400' :
+                                                exp.id === 'timestamp' ? 'bg-gradient-to-b from-red-500 to-rose-700' :
+                                                'bg-gradient-to-b from-teal-400 to-emerald-700';
+
+                                            if (percent === 0) return null;
 
                                             return (
                                                 <motion.div
@@ -1051,7 +1336,7 @@ export default function Experience() {
                                                         <span className="font-mono">
                                                             {(() => {
                                                                 const exp = [...EXPERIENCES].reverse()[hoveredDistIndex];
-                                                                const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                                                const ms = getExpMs(exp);
                                                                 return convertTime(ms, timeUnit).toFixed(getDecimals(timeUnit));
                                                             })()} {timeUnit}
                                                         </span>
@@ -1059,12 +1344,11 @@ export default function Experience() {
                                                     <span className="text-xs font-bold bg-white/10 px-2 py-1 rounded-full text-primary mt-1">
                                                         {(() => {
                                                             const exp = [...EXPERIENCES].reverse()[hoveredDistIndex];
-                                                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
-                                                            return ((ms / totalMs) * 100).toFixed(1) + '%';
+                                                            const ms = getExpMs(exp);
+                                                            return totalMs > 0 ? ((ms / totalMs) * 100).toFixed(1) + '%' : '0%';
                                                         })()}
                                                     </span>
                                                 </div>
-                                                {/* Arrow */}
                                                 <div className="w-4 h-4 bg-black/90 border-r border-b border-white/20 transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-2" />
                                             </motion.div>
                                         )}
@@ -1072,21 +1356,49 @@ export default function Experience() {
                                 </div>
 
                                 {/* Legend */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {[...EXPERIENCES].reverse().map((exp) => {
-                                        const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
-                                        const percent = (ms / totalMs) * 100;
-                                        const colorClass =
-                                            exp.id === 'sapas' ? 'bg-primary' :
-                                                exp.id === 'timestamp' ? 'bg-blue-600' :
-                                                    'bg-emerald-500';
+                                        const ms = getExpMs(exp);
+                                        const percent = totalMs > 0 ? (ms / totalMs) * 100 : 0;
+                                        const theme = COMPANY_THEMES[exp.id] || COMPANY_THEMES.sapas;
+                                        const isFullBleed = exp.id === 'alsea' || exp.id === 'timestamp' || exp.id === 'inetum';
 
                                         return (
-                                            <div key={exp.id} className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                                                <div className={`w-3 h-12 rounded-full ${colorClass} shadow-[0_0_10px_currentColor]`} />
-                                                <div>
-                                                    <span className="block text-white font-bold text-sm">{exp.company}</span>
-                                                    <span className="text-muted-foreground text-xs">{percent.toFixed(1)}% del tiempo</span>
+                                            <div
+                                                key={exp.id}
+                                                className={cn(
+                                                    "relative overflow-hidden flex items-center gap-3 p-3.5 rounded-xl border border-white/10 transition-all duration-300 group backdrop-blur-md bg-white/[0.03]",
+                                                    theme.borderHover
+                                                )}
+                                            >
+                                                {/* Animated ambient gradient */}
+                                                <motion.div
+                                                    animate={{ opacity: [0.15, 0.4, 0.15] }}
+                                                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                                                    className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", theme.gradientBg)}
+                                                />
+                                                <div className="relative z-10 flex items-center gap-3 w-full">
+                                                    <div className={cn(
+                                                        "w-9 h-9 rounded-lg shrink-0 flex items-center justify-center overflow-hidden shadow-sm",
+                                                        isFullBleed ? "p-0" : "bg-white p-1"
+                                                    )}>
+                                                        <img
+                                                            src={exp.logo}
+                                                            alt={exp.company}
+                                                            className={cn(
+                                                                "w-full h-full",
+                                                                isFullBleed ? "object-cover scale-105" : "object-contain"
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className={cn("block font-bold text-sm text-white truncate transition-colors", theme.accentText)}>
+                                                            {exp.company}
+                                                        </span>
+                                                        <span className="text-muted-foreground text-xs font-mono">
+                                                            {percent.toFixed(1)}% del tiempo
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         )
@@ -1094,7 +1406,7 @@ export default function Experience() {
                                 </div>
                             </div>
 
-                            {/* Work Mode Distribution (New) */}
+                            {/* Work Mode Distribution */}
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:col-span-2">
                                 <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
                                     <MapPin className="text-pink-400" size={20} />
@@ -1104,11 +1416,10 @@ export default function Experience() {
                                 <div className="flex flex-col md:flex-row items-center justify-center gap-12">
                                     {/* Conic Gradient Chart */}
                                     {(() => {
-                                        // Calculate Work Mode Stats
                                         const stats = EXPERIENCES.reduce((acc, exp) => {
                                             const mode = exp.workMode.includes('Remoto') ? 'Remoto' :
                                                 exp.workMode.includes('Híbrido') ? 'Híbrido' : 'Presencial';
-                                            const ms = exp.id === 'sapas' ? currentMsSapas : calculateDiffMs(exp.startDate, exp.endDate);
+                                            const ms = getExpMs(exp);
                                             acc[mode] = (acc[mode] || 0) + ms;
                                             return acc;
                                         }, {} as Record<string, number>);
@@ -1116,13 +1427,12 @@ export default function Experience() {
                                         const remoteMs = stats['Remoto'] || 0;
                                         const hybridMs = stats['Híbrido'] || 0;
 
-                                        const remotePercent = (remoteMs / totalMs) * 100;
-                                        const hybridPercent = (hybridMs / totalMs) * 100;
+                                        const remotePercent = totalMs > 0 ? (remoteMs / totalMs) * 100 : 0;
+                                        const hybridPercent = totalMs > 0 ? (hybridMs / totalMs) * 100 : 0;
 
                                         return (
                                             <>
                                                 <div className="relative w-48 h-48 rounded-full shadow-2xl flex items-center justify-center group">
-                                                    {/* CSS Conic Gradient */}
                                                     <div
                                                         className="absolute inset-0 rounded-full animate-spin-slow"
                                                         style={{
@@ -1132,7 +1442,6 @@ export default function Experience() {
                                                             )`
                                                         }}
                                                     />
-                                                    {/* Inner Circle for Donut Effect */}
                                                     <div className="absolute inset-4 bg-[#0a0a0a] rounded-full z-10 flex flex-col items-center justify-center p-4 text-center">
                                                         <span className="text-muted-foreground text-xs uppercase tracking-wider">Dominante</span>
                                                         <span className="text-2xl font-bold text-white">
@@ -1198,6 +1507,25 @@ export default function Experience() {
                         <ExperienceMilestones experiences={EXPERIENCES} />
                     </motion.div>
                 )}
+
+                {/* Calendar View */}
+                {viewMode === 'calendar' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <ExperienceCalendar
+                            experiences={EXPERIENCES}
+                            totalWorkedDays={Math.round(convertTime(totalMs, 'Días'))}
+                            onNavigateToTimeline={(companyId) => {
+                                setViewMode('timeline');
+                                setHighlightedId(companyId);
+                                const expIdx = EXPERIENCES.findIndex(e => e.id === companyId);
+                                if (expIdx !== -1) setExpandedIndex(expIdx);
+                            }}
+                        />
+                    </motion.div>
+                )}
             </div>
         </section>
     );
@@ -1224,6 +1552,33 @@ function IntegrationFlow({ experienceId }: { experienceId: string }) {
 
     const getFlowData = (): FlowNode[] => {
         switch (experienceId) {
+            case "alsea":
+                return [
+                    {
+                        id: "oracle",
+                        title: "Oracle DB & ERP Legacy",
+                        subtitle: "Origen de Datos",
+                        icon: Database,
+                        tech: "Oracle SQL, JDBC, PL/SQL",
+                        description: "Extracción y consulta de datos transaccionales, inventario y ventas alojados en bases de datos y ERPs tradicionales de Oracle."
+                    },
+                    {
+                        id: "cpi",
+                        title: "SAP CPI / Integration Suite",
+                        subtitle: "Middleware & Migración",
+                        icon: Network,
+                        tech: "Groovy, Mapping, Batch OData",
+                        description: "Pipelines de migración y sincronización delta. Ejecución de scripts en Groovy para la normalización, validación y adaptación de esquemas a estándares SAP."
+                    },
+                    {
+                        id: "cap",
+                        title: "SAP BTP / S4HANA",
+                        subtitle: "Destino Cloud Final",
+                        icon: Server,
+                        tech: "Clean Core, SAP CAP, Node.js",
+                        description: "Recepción segura de datos mediante microservicios CAP y servicios OData V4 en el entorno corporativo de cliente final."
+                    }
+                ];
             case "sapas":
                 return [
                     {
@@ -1347,6 +1702,19 @@ function IntegrationFlow({ experienceId }: { experienceId: string }) {
 
     const getSimulationSequence = () => {
         switch (experienceId) {
+            case "alsea":
+                return [
+                    { delay: 0, step: 0, text: "[08:00:01] ORACLE - Consulta de extracción iniciada en base de datos Oracle." },
+                    { delay: 600, text: "[08:00:01] QUERY - Extrayendo paquete delta: 15.000 registros de ventas y stock." },
+                    { delay: 1200, text: "[08:00:02] SEND - Transmitiendo lote de migración a SAP Integration Suite..." },
+                    { delay: 2000, step: 1, text: "[08:00:03] RECEIVE - Lote recibido en pipeline de migración SAP CPI." },
+                    { delay: 2600, text: "[08:00:03] PROCESS - Ejecutando script Groovy para mapeo y conversión de tipos." },
+                    { delay: 3200, text: "[08:00:04] VALIDATE - Esquema validado contra especificación Clean Core." },
+                    { delay: 4000, step: 2, text: "[08:00:05] BTP - Enviando llamadas por lotes a microservicio SAP CAP (OData V4)." },
+                    { delay: 4600, text: "[08:00:05] AUTH - Autenticación OAuth 2.0 y roles de cliente final verificados." },
+                    { delay: 5200, text: "[08:00:06] SUCCESS - Inserción completada en el entorno SAP BTP de Alsea." },
+                    { delay: 6000, text: "[08:00:07] SIM - ¡Flujo de migración Oracle a SAP BTP ejecutado con éxito!" }
+                ];
             case "sapas":
                 return [
                     { delay: 0, step: 0, text: "[12:05:01] INFO - Conexión establecida con el HIS Hospitalario." },
@@ -1594,13 +1962,13 @@ function IntegrationFlow({ experienceId }: { experienceId: string }) {
                                         color = "text-emerald-400 font-bold";
                                     } else if (log.includes("INFO") || log.includes("RECEIVE") || log.includes("CONNECT") || log.includes("SEND")) {
                                         color = "text-blue-400";
-                                    } else if (log.includes("EVENT") || log.includes("DATA") || log.includes("ERP")) {
+                                    } else if (log.includes("EVENT") || log.includes("DATA") || log.includes("ERP") || log.includes("QUERY")) {
                                         color = "text-purple-400";
-                                    } else if (log.includes("PROCESS") || log.includes("MIGRATION") || log.includes("Groovy")) {
+                                    } else if (log.includes("PROCESS") || log.includes("MIGRATION") || log.includes("Groovy") || log.includes("ORACLE")) {
                                         color = "text-amber-400";
-                                    } else if (log.includes("DB") || log.includes("HANA") || log.includes("UPLOAD")) {
+                                    } else if (log.includes("DB") || log.includes("HANA") || log.includes("UPLOAD") || log.includes("BTP")) {
                                         color = "text-cyan-400";
-                                    } else if (log.includes("SEC") || log.includes("DECRYPT") || log.includes("TUNNEL")) {
+                                    } else if (log.includes("SEC") || log.includes("DECRYPT") || log.includes("TUNNEL") || log.includes("AUTH") || log.includes("VALIDATE")) {
                                         color = "text-pink-400";
                                     }
 
