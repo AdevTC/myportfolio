@@ -342,7 +342,7 @@ export default function Experience() {
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [isCompaniesDropdownOpen, setCompaniesDropdownOpen] = useState(false);
     const [highlightedId, setHighlightedId] = useState<string | null>(null);
-    const [salaryMetric, setSalaryMetric] = useState<'total' | 'previous'>('total');
+    const [salaryMetric, setSalaryMetric] = useState<'total' | 'previous' | 'combined'>('total');
     const [hoveredDistIndex, setHoveredDistIndex] = useState<number | null>(null);
     const [tick, setTick] = useState(0);
 
@@ -1222,60 +1222,190 @@ export default function Experience() {
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Salary Growth Chart */}
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:col-span-2">
-                                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                        <TrendingUp className="text-green-400" size={20} />
-                                        Crecimiento Salarial ({salaryMetric === 'total' ? 'Acumulado' : 'Vs. Anterior'})
-                                    </h3>
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 md:col-span-2 shadow-2xl backdrop-blur-xl">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                            <TrendingUp className="text-emerald-400" size={20} />
+                                            <span>
+                                                Crecimiento Salarial {
+                                                    salaryMetric === 'total' ? '(Acumulado)' :
+                                                    salaryMetric === 'previous' ? '(Vs. Anterior)' :
+                                                    '(Combinado: Acumulado & Vs. Anterior)'
+                                                }
+                                            </span>
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Evolución salarial relativa y crecimiento porcentual por etapa profesional.
+                                        </p>
+                                    </div>
 
-                                    {/* Toggle */}
-                                    <div className="bg-black/40 p-1 rounded-lg flex text-xs font-medium">
+                                    {/* 3-Way Mode Toggle */}
+                                    <div className="bg-black/50 p-1 rounded-xl border border-white/10 flex text-xs font-medium shadow-inner shrink-0">
                                         <button
                                             onClick={() => setSalaryMetric('total')}
-                                            className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'total' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+                                            className={`px-3 py-1.5 rounded-lg transition-all ${
+                                                salaryMetric === 'total'
+                                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm font-bold'
+                                                    : 'text-muted-foreground hover:text-white'
+                                            }`}
                                         >
                                             Acumulado
                                         </button>
                                         <button
                                             onClick={() => setSalaryMetric('previous')}
-                                            className={`px-3 py-1.5 rounded-md transition-all ${salaryMetric === 'previous' ? 'bg-green-500/20 text-green-400 shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+                                            className={`px-3 py-1.5 rounded-lg transition-all ${
+                                                salaryMetric === 'previous'
+                                                    ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30 shadow-sm font-bold'
+                                                    : 'text-muted-foreground hover:text-white'
+                                            }`}
                                         >
                                             Vs. Anterior
+                                        </button>
+                                        <button
+                                            onClick={() => setSalaryMetric('combined')}
+                                            className={`px-3 py-1.5 rounded-lg transition-all ${
+                                                salaryMetric === 'combined'
+                                                    ? 'bg-gradient-to-r from-emerald-500/25 to-sky-500/25 text-white border border-white/25 shadow-sm font-bold'
+                                                    : 'text-muted-foreground hover:text-white'
+                                            }`}
+                                        >
+                                            Combinado
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className="space-y-6">
+                                {/* Combined Legend */}
+                                {salaryMetric === 'combined' && (
+                                    <div className="flex items-center gap-6 mb-6 p-3 rounded-xl bg-black/40 border border-white/5 text-xs font-semibold flex-wrap">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-300 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                            <span className="text-emerald-300">Crecimiento Acumulado (vs Inicial)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-3 h-3 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
+                                            <span className="text-sky-300">Vs. Puesto Anterior (Salto Directo)</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Progress Bars */}
+                                <div className="space-y-5">
                                     {[...EXPERIENCES].reverse().map((exp, i) => {
-                                        const value = salaryMetric === 'total' ? exp.growthTotal : exp.growthVsPrevious;
-                                        const displayValue = value || 0;
-                                        const barWidth = Math.min(Math.abs(displayValue), 100);
+                                        const isFullBleed = exp.id === 'alsea' || exp.id === 'timestamp' || exp.id === 'inetum';
+                                        const totalVal = exp.growthTotal || 0;
+                                        const prevVal = exp.growthVsPrevious || 0;
+
+                                        // In combined mode:
+                                        if (salaryMetric === 'combined') {
+                                            const totalWidth = Math.min(Math.max((totalVal / 147.37) * 100, 3), 100);
+                                            const prevWidth = Math.min(Math.max((prevVal / 147.37) * 100, 3), 100);
+
+                                            return (
+                                                <div
+                                                    key={exp.id}
+                                                    className="space-y-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-all"
+                                                >
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className={cn(
+                                                                "w-6 h-6 rounded-lg overflow-hidden shadow-sm flex items-center justify-center ring-1 ring-white/10",
+                                                                isFullBleed ? "p-0" : "bg-white p-0.5"
+                                                            )}>
+                                                                <img src={exp.logo} alt={exp.company} className="w-full h-full object-cover" />
+                                                            </div>
+                                                            <span className="text-white font-bold">{exp.company}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-xs font-mono">
+                                                            <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                                                Acum: +{totalVal.toFixed(2)}%
+                                                            </span>
+                                                            <span className="text-sky-400 font-bold bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
+                                                                Vs. Ant: +{prevVal.toFixed(2)}%
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Bar 1: Acumulado (Verde Esmeralda) */}
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between text-[11px] text-muted-foreground">
+                                                            <span className="text-emerald-300/80 font-medium">Acumulado vs Salario Inicial</span>
+                                                            <span className="font-mono text-emerald-400 font-semibold">+{totalVal.toFixed(2)}%</span>
+                                                        </div>
+                                                        <div className="h-3 bg-white/5 rounded-full overflow-hidden relative">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${totalWidth}%` }}
+                                                                transition={{ duration: 0.9, delay: i * 0.1, ease: "easeOut" }}
+                                                                className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Bar 2: Vs Anterior (Azul Cielo) */}
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between text-[11px] text-muted-foreground">
+                                                            <span className="text-sky-300/80 font-medium">Salto vs Puesto Anterior</span>
+                                                            <span className="font-mono text-sky-400 font-semibold">+{prevVal.toFixed(2)}%</span>
+                                                        </div>
+                                                        <div className="h-3 bg-white/5 rounded-full overflow-hidden relative">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${prevWidth}%` }}
+                                                                transition={{ duration: 0.9, delay: i * 0.1 + 0.1, ease: "easeOut" }}
+                                                                className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-300 shadow-[0_0_12px_rgba(56,189,248,0.4)]"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        // Single Bar Modes (Acumulado or Vs. Anterior)
+                                        const isTotalMode = salaryMetric === 'total';
+                                        const displayValue = isTotalMode ? totalVal : prevVal;
+                                        const maxScale = isTotalMode ? 147.37 : 50;
+                                        const barWidth = Math.min(Math.max((displayValue / maxScale) * 100, 3), 100);
 
                                         return (
-                                            <div key={exp.id} className="space-y-2">
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-white font-medium">{exp.company}</span>
-                                                    <span className={`font-mono ${displayValue >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            <div key={exp.id} className="space-y-2 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all">
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className={cn(
+                                                            "w-6 h-6 rounded-lg overflow-hidden shadow-sm flex items-center justify-center ring-1 ring-white/10",
+                                                            isFullBleed ? "p-0" : "bg-white p-0.5"
+                                                        )}>
+                                                            <img src={exp.logo} alt={exp.company} className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <span className="text-white font-bold">{exp.company}</span>
+                                                    </div>
+                                                    <span className={`font-mono font-bold text-sm ${isTotalMode ? 'text-emerald-400' : 'text-sky-400'}`}>
                                                         {displayValue > 0 ? '+' : ''}{displayValue.toFixed(2)}%
                                                     </span>
                                                 </div>
-                                                <div className="h-4 bg-white/10 rounded-full overflow-hidden relative">
+                                                <div className="h-4 bg-white/5 rounded-full overflow-hidden relative">
                                                     <motion.div
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${barWidth}%` }}
                                                         transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
-                                                        className={`absolute top-0 left-0 h-full rounded-full ${displayValue >= 0 ? 'bg-gradient-to-r from-green-500 to-emerald-300' : 'bg-gradient-to-r from-red-500 to-orange-400'}`}
+                                                        className={`absolute top-0 left-0 h-full rounded-full ${
+                                                            isTotalMode
+                                                                ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                                                                : 'bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-300 shadow-[0_0_12px_rgba(56,189,248,0.4)]'
+                                                        }`}
                                                     />
                                                 </div>
                                             </div>
-                                        )
+                                        );
                                     })}
                                 </div>
+
                                 <p className="mt-6 text-xs text-muted-foreground text-center">
                                     {salaryMetric === 'total'
-                                        ? '*Crecimiento porcentual respecto al salario inicial base.'
-                                        : '*Crecimiento porcentual respecto a la posición inmediatamente anterior.'}
+                                        ? '*Crecimiento porcentual acumulado respecto al salario inicial base.'
+                                        : salaryMetric === 'previous'
+                                        ? '*Crecimiento porcentual salto a salto respecto a la posición inmediatamente anterior.'
+                                        : '*Comparativa dual: Verde esmeralda = Crecimiento acumulado total | Azul cielo = Salto directo vs empresa anterior.'}
                                 </p>
                             </div>
 
